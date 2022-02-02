@@ -31,3 +31,4 @@ app.get('/:resort/snowConditions', (req, res) => { snowConditions.snowConditions
 app.listen(process.env.PORT || 3001, () => {
     console.log(`app is running on port ${process.env.PORT}`);
 })
+// 
