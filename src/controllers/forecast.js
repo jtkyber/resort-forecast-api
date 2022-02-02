@@ -479,8 +479,9 @@ const forecast = async (req, res, p, url) => {
 
         const totalTime = Date.now() - startTime;
         console.log(totalTime);
-
-        res.json(result);
+        
+        const u = (units === 'm' ? 'metric' : 'imperial')
+        res.json(units ? result[u] : result);
     } catch (err) {
         console.log(err, 'forecast');
     } finally {
