@@ -22,6 +22,8 @@ app.use('/:resort', async (req, res, next) => {
     }
 })
 
+app.get('/', (req, res) => { res.json('Working') })
+
 app.get('/:resort/forecast', (req, res) => { forecast.forecast(req, res, p, url) })
 
 app.get('/:resort/snowConditions', (req, res) => { snowConditions.snowConditions(req, res, p, url) })
