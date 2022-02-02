@@ -45,13 +45,13 @@ const getSnowConditions = async (page, units) => {
         const snowDepthRows = document.querySelectorAll('.snow-depths-table__table > tbody > tr');
         snowDepthRows.forEach(row => {
             if (row.childNodes[0].innerText.toLowerCase() === 'top snow depth:') {
-                snowDepthObject.topSnowDepth = row.childNodes[1].childNodes[0].innerText + unit;
+                snowDepthObject.topSnowDepth = row.childNodes[1].childNodes[0].innerText ? row.childNodes[1].childNodes[0].innerText + unit : 'not found';
             } else if (row.childNodes[0].innerText.toLowerCase() === 'bottom snow depth:') {
-                snowDepthObject.botSnowDepth = row.childNodes[1].childNodes[0].innerText + unit;
+                snowDepthObject.botSnowDepth = row.childNodes[1].childNodes[0].innerText ? row.childNodes[1].childNodes[0].innerText + unit : 'not found';
             } else if (row.childNodes[0].innerText.toLowerCase() === 'fresh snowfall depth:') {
-                snowDepthObject.freshSnowfall = row.childNodes[1].childNodes[0].innerText + unit;
+                snowDepthObject.freshSnowfall = row.childNodes[1].childNodes[0].innerText ? row.childNodes[1].childNodes[0].innerText + unit : 'not found';
             } else if (row.childNodes[0].innerText.toLowerCase() === 'last snowfall:') {
-                snowDepthObject.lastSnowfallDate = row.childNodes[1].innerText;
+                snowDepthObject.lastSnowfallDate = row.childNodes[1].innerText ? row.childNodes[1].innerText : 'not found';
             }
         })
         return snowDepthObject;
@@ -76,7 +76,7 @@ const handleUnitChange = async (page, url, units) => {
 
 const snowConditions = async (req, res, p, url) => {
     try {
-        const units = req?.query?.u;
+        const units = req?.query?.units;
         const startTime = Date.now();
         var browser = await p.launch({headless: true, args: ['--no-sandbox']});
         const page = await browser.newPage();
@@ -101,8 +101,8 @@ const snowConditions = async (req, res, p, url) => {
         }
         
         const result = {
-            m: resultMetric,
-            i: resultImperial
+            metric: resultMetric,
+            imperial: resultImperial
         }
 
         const totalTime = Date.now() - startTime;

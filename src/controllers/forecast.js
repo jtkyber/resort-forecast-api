@@ -368,7 +368,7 @@ const getForecast = async (page, units) => {
         }
 
         return {
-            day: day.day,
+            dayOfWeek: day.day,
             am: forecastAM,
             pm: forecastPM,
             night: forecastNIGHT
@@ -430,8 +430,8 @@ const handleUnitChange = async (page, url, elevation, units) => {
 
 const forecast = async (req, res, p, url) => {
     try {
-        const units = req?.query?.u;
-        const elevation = req?.query?.e;
+        const units = req?.query?.units;
+        const elevation = req?.query?.el;
         const startTime = Date.now();
         var browser = await p.launch({headless: true, args: ['--no-sandbox']});
         const page = await browser.newPage();
@@ -457,8 +457,8 @@ const forecast = async (req, res, p, url) => {
         }
         
         const result = {
-            m: resultMetric,
-            i: resultImperial
+            metric: resultMetric,
+            imperial: resultImperial
         }
 
         const totalTime = Date.now() - startTime;
