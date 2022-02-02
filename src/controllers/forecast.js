@@ -467,8 +467,7 @@ const handleUnitChange = async (page, url, elevation, units) => {
 const forecast = async (req, res, p, url) => {
     try {
         const units = req?.query?.units;
-        const elevation = req?.query?.el;
-        const startTime = Date.now();
+        const elevation = req?.query?.el
         var browser = await p.launch({headless: true, args: ['--no-sandbox']});
         const page = await browser.newPage();
         await page.setDefaultTimeout(60000);
@@ -496,9 +495,6 @@ const forecast = async (req, res, p, url) => {
             metric: resultMetric,
             imperial: resultImperial
         }
-
-        const totalTime = Date.now() - startTime;
-        console.log(totalTime);
 
         const u = (units === 'm' ? 'metric' : 'imperial')
         res.json(units ? result[u] : result);

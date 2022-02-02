@@ -96,7 +96,6 @@ const getSnowConditions = ($, pageUnits, units) => {
 
 const snowConditions = (req, res, cheerio, request, url) => {
     try {
-        const startTime = Date.now();
         const units = req?.query?.units;
         request(url, (error, response, html) => {
             if (!error && response.statusCode == 200) {
@@ -130,8 +129,6 @@ const snowConditions = (req, res, cheerio, request, url) => {
                 }
 
                 const u = (units === 'm' ? 'metric' : 'imperial')
-                const totalTime = Date.now() - startTime;
-                console.log(totalTime);
                 res.json(units ? result[u] : result);
             } else {
                 throw new Error('Error');
