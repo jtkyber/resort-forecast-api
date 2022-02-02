@@ -9,7 +9,7 @@ app.use(cors());
 
 const getUrl = require('./controllers/getUrl');
 const snowConditions = require('./controllers/snowConditions');
-const snowConditionsPup = require('./controllers/snowConditionsPup');
+// const snowConditionsPup = require('./controllers/snowConditionsPup');
 const forecast = require('./controllers/forecast');
 
 let url = null;

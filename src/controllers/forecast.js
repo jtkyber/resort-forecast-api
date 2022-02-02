@@ -384,9 +384,7 @@ const getForecast = async (page, units) => {
             }
         })
 
-        return {
-            ...organizedArray
-        };
+        return organizedArray;
     } catch(err) {
         console.log(err, 'getForecast')
     }
@@ -395,7 +393,6 @@ const getForecast = async (page, units) => {
 const handleUnitChange = async (page, url, elevation, units) => {
     try {
         //Click elevation buttons and get forecast for each elevation
-        const weeklyForecast = {};
         let indexStart = 0;
         let indexEnd = 2;
         if (elevation === 'top') {
@@ -409,6 +406,11 @@ const handleUnitChange = async (page, url, elevation, units) => {
             indexEnd = 2;
         }
 
+        let weeklyForecast = {};
+        let topLift;
+        let midLift;
+        let botLift;
+
         for (let i = indexStart; i <= indexEnd; i++) {
             await page.evaluate((i) => {
                 const elevationBtnTop = document.querySelectorAll('#leftNav .elevation-control__link');
@@ -419,26 +421,44 @@ const handleUnitChange = async (page, url, elevation, units) => {
 
             if (i == 0) {
                 await clickUnitButton(page, units);
-                weeklyForecast.topLift = await getForecast(page, units);
-                weeklyForecast.topLift = Object.values(weeklyForecast.topLift);
+                topLift = await getForecast(page, units);
+                weeklyForecast.topLift = Object.values(topLift);
             } else if (i == 1) {
                 await clickUnitButton(page, units);
-                weeklyForecast.midLift = await getForecast(page, units);
-                weeklyForecast.midLift = Object.values(weeklyForecast.midLift);
+                midLift = await getForecast(page, units);
+                weeklyForecast.midLift = Object.values(midLift);
             } else if (i == 2) {
                 await clickUnitButton(page, units);
-                weeklyForecast.botLift = await getForecast(page, units);
-                weeklyForecast.botLift = Object.values(weeklyForecast.botLift);
+                botLift = await getForecast(page, units);
+                weeklyForecast.botLift = Object.values(botLift);
             }
         }
 
         //Get basic info (top/mid/bot lift elevations, lat/lon)
         const basicInfo = await getBasicInfo(page, url, units);
 
-        return {
-            ...weeklyForecast,
-            basicInfo
+        let liftForecast;
+
+        if (elevation === 'top') {
+            liftForecast = topLift
+        } else if (elevation === 'mid') {
+            liftForecast = midLift
+        } else if (elevation === 'bot') {
+            liftForecast = botLift
         }
+
+        if (elevation) {
+            return {
+                forecast: liftForecast,
+                basicInfo
+            }
+        } else {
+            return {
+                ...weeklyForecast,
+                basicInfo
+            }
+        }
+
     } catch(err) {
         console.log(err, 'handleUnitChange')
     }
@@ -479,7 +499,7 @@ const forecast = async (req, res, p, url) => {
 
         const totalTime = Date.now() - startTime;
         console.log(totalTime);
-        
+
         const u = (units === 'm' ? 'metric' : 'imperial')
         res.json(units ? result[u] : result);
     } catch (err) {
