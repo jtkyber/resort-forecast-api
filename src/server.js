@@ -9,6 +9,7 @@ app.use(cors());
 
 const getUrl = require('./controllers/getUrl');
 const snowConditions = require('./controllers/snowConditions');
+const snowConditionsPup = require('./controllers/snowConditionsPup');
 const forecast = require('./controllers/forecast');
 
 let url = null;
@@ -26,9 +27,10 @@ app.get('/', (req, res) => { res.json('Working') })
 
 app.get('/:resort/forecast', (req, res) => { forecast.forecast(req, res, p, url) })
 
-app.get('/:resort/snowConditions', (req, res) => { snowConditions.snowConditions(req, res, p, url) })
+app.get('/:resort/snowConditions', (req, res) => { snowConditions.snowConditions(req, res, cheerio, request, url) })
+
+// app.get('/:resort/snowConditions', (req, res) => { snowConditionsPup.snowConditionsPup(req, res, p, url) })
 
 app.listen(process.env.PORT || 3001, () => {
     console.log(`app is running on port ${process.env.PORT}`);
 })
-// 

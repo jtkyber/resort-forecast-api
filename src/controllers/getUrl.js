@@ -33,7 +33,7 @@ const getUrl = (req, request, cheerio) => {
             return value;
         })
     } catch (err) {
-        console.log(err);
+        console.log(err, 'getUrl');
     }
 }
 
