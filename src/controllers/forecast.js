@@ -162,15 +162,15 @@ const getForecast = async (page, units) => {
             snowForecasts.forEach((snowForecast, i) => {
                 if (i <= 17) {
                     if (startSelection && snowForecast.parentElement.parentElement.classList.contains('day-end')) {
-                        snowForecastChunk.night = snowForecast.classList.contains('has-value') ? snowForecast.innerText + unit : '0' + unit;
+                        snowForecastChunk.night = parseFloat(snowForecast.innerText) ? snowForecast.innerText + unit : '0' + unit;
                         snowForecastTemp.push(snowForecastChunk);
                         snowForecastChunk = {};
                         count = 0;
                     } else if (startSelection && count === 0) {
-                        snowForecastChunk.am = snowForecast.classList.contains('has-value') ? snowForecast.innerText + unit : '0' + unit;
+                        snowForecastChunk.am = parseFloat(snowForecast.innerText) ? snowForecast.innerText + unit : '0' + unit;
                         count++;
                     } else if (startSelection && count === 1) {
-                        snowForecastChunk.pm = snowForecast.classList.contains('has-value') ? snowForecast.innerText + unit : '0' + unit;
+                        snowForecastChunk.pm = parseFloat(snowForecast.innerText) ? snowForecast.innerText + unit : '0' + unit;
                         count++;
                     } else if (!startSelection && snowForecast.parentElement.parentElement.classList.contains('day-end')) {
                         startSelection = true;
@@ -393,70 +393,39 @@ const getForecast = async (page, units) => {
 const handleUnitChange = async (page, url, elevation, units) => {
     try {
         //Click elevation buttons and get forecast for each elevation
-        let indexStart = 0;
-        let indexEnd = 2;
-        if (elevation === 'top') {
-            indexStart = 0;
-            indexEnd = 0;
-        } else if (elevation === 'mid') {
-            indexStart = 1;
-            indexEnd = 1;
-        } else if (elevation === 'bot') {
-            indexStart = 2;
-            indexEnd = 2;
-        }
-
         let weeklyForecast = {};
-        let topLift;
-        let midLift;
-        let botLift;
 
-        for (let i = indexStart; i <= indexEnd; i++) {
-            await page.evaluate((i) => {
-                const elevationBtnTop = document.querySelectorAll('#leftNav .elevation-control__link');
-                elevationBtnTop[i].click();
-            }, i)
-
-            await page.waitForNavigation();
-
-            if (i == 0) {
-                await clickUnitButton(page, units);
-                topLift = await getForecast(page, units);
-                weeklyForecast.topLift = Object.values(topLift);
-            } else if (i == 1) {
-                await clickUnitButton(page, units);
-                midLift = await getForecast(page, units);
-                weeklyForecast.midLift = Object.values(midLift);
-            } else if (i == 2) {
-                await clickUnitButton(page, units);
-                botLift = await getForecast(page, units);
-                weeklyForecast.botLift = Object.values(botLift);
+        if (!elevation) {
+            for (let i = 0; i <= 2; i++) {
+                await page.evaluate((i) => {
+                    const elevationBtnTop = document.querySelectorAll('#leftNav .elevation-control__link');
+                    elevationBtnTop[i].click();
+                }, i)
+    
+                await page.waitForNavigation();
+    
+                if (i == 0) {
+                    await clickUnitButton(page, units);
+                    weeklyForecast.topLift = await getForecast(page, units);
+                } else if (i == 1) {
+                    await clickUnitButton(page, units);
+                    weeklyForecast.midLift = await getForecast(page, units);
+                } else if (i == 2) {
+                    await clickUnitButton(page, units);
+                    weeklyForecast.botLift = await getForecast(page, units);
+                }
             }
+        } else {
+            await clickUnitButton(page, units);
+            weeklyForecast.forecast = await getForecast(page, units);
         }
 
         //Get basic info (top/mid/bot lift elevations, lat/lon)
         const basicInfo = await getBasicInfo(page, url, units);
 
-        let liftForecast;
-
-        if (elevation === 'top') {
-            liftForecast = topLift
-        } else if (elevation === 'mid') {
-            liftForecast = midLift
-        } else if (elevation === 'bot') {
-            liftForecast = botLift
-        }
-
-        if (elevation) {
-            return {
-                forecast: liftForecast,
-                basicInfo
-            }
-        } else {
-            return {
-                ...weeklyForecast,
-                basicInfo
-            }
+        return {
+            ...weeklyForecast,
+            basicInfo
         }
 
     } catch(err) {
@@ -467,7 +436,7 @@ const handleUnitChange = async (page, url, elevation, units) => {
 const forecast = async (req, res, p, url) => {
     try {
         const units = req?.query?.units;
-        const elevation = req?.query?.el
+        const elevation = (req?.query?.el === 'top' || req?.query?.el === 'mid' || req?.query?.el === 'bot') ? req?.query?.el : null;
         var browser = await p.launch({headless: true, args: ['--no-sandbox']});
         const page = await browser.newPage();
         await page.setDefaultTimeout(60000);

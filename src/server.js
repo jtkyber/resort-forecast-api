@@ -8,9 +8,10 @@ app.use(express.json());
 app.use(cors());
 
 const getUrl = require('./controllers/getUrl');
+const hourly = require('./controllers/hourly');
+const forecast = require('./controllers/forecast');
 const snowConditions = require('./controllers/snowConditions');
 // const snowConditionsPup = require('./controllers/snowConditionsPup');
-const forecast = require('./controllers/forecast');
 
 let url = null;
 
@@ -24,6 +25,8 @@ app.use('/:resort', async (req, res, next) => {
 })
 
 app.get('/', (req, res) => { res.json('Working') })
+
+app.get('/:resort/hourly', (req, res) => { hourly.hourly(req, res, p, url) })
 
 app.get('/:resort/forecast', (req, res) => { forecast.forecast(req, res, p, url) })
 

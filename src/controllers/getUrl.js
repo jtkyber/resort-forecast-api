@@ -1,5 +1,6 @@
 const getUrl = (req, request, cheerio) => {
     try {
+        const e = (req?.query?.el === 'top' || req?.query?.el === 'mid' || req?.query?.el === 'bot') ? `/${req?.query?.el}` : '/top';
         const name = req.params.resort;
         const formattedName = name.replace(/ /g,"+");
         const googleSearch = `https://www.google.com/search?q=${formattedName}+snow+forecast`;
@@ -16,7 +17,7 @@ const getUrl = (req, request, cheerio) => {
                                 const urlRegex = /(https?:\/\/[^ ]*)/;
                                 const extractedUrl = url.match(urlRegex)[1];
                                 const splicedUrl = extractedUrl.slice(0, extractedUrl.lastIndexOf("/"));
-                                const finalUrl = splicedUrl + '/mid';
+                                const finalUrl = splicedUrl + e;
                                 if (finalUrl.length > 48 && finalUrl.length < 100) {
                                     snowForcastUrl = finalUrl;
                                     resolve(snowForcastUrl);
