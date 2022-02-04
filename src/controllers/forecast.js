@@ -347,6 +347,19 @@ const getForecast = async (page, units) => {
             return freezeLevelsTemp;
         }, units)
 
+        //Get summaries
+        const forecastSummaries = await page.$$eval('.h-container .phrase', (summaries) => {
+            const forecastSummariesTemp = {};
+            summaries.forEach((summary, i) => {
+                if (i === 0) {
+                    forecastSummariesTemp.summary3Day = summary.innerText;
+                } else if (i === 1) {
+                    forecastSummariesTemp.summaryDays4To6 = summary.innerText;
+                }
+            })
+            return forecastSummariesTemp;
+        })
+
         daysArray.forEach((day, i) => {
             forecastArray.push({
                 day: day,
@@ -384,7 +397,11 @@ const getForecast = async (page, units) => {
             }
         })
 
-        return organizedArray;
+        return {
+            forecast5Day: organizedArray,
+            summary3Day: forecastSummaries.summary3Day,
+            summaryDays4To6: forecastSummaries.summaryDays4To6
+        };
     } catch(err) {
         console.log(err, 'getForecast')
     }
