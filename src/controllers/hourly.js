@@ -79,7 +79,12 @@ const getHourly = async (page, units) => {
             const summaryTemp = [];
             summaries.forEach((summary, i) => {
                 if (!summary[i+1]?.parentElement?.parentElement?.classList.contains('day-end')) {
-                    summaryTemp.push(summary.innerText);
+                    let sumCorrected = summary.innerText;
+                    if (sumCorrected.includes('shwrs')) {
+                        sumCorrected = sumCorrected.replace('shwrs', 'showers');
+                    }
+
+                    summaryTemp.push(sumCorrected);
                 }
             })
             return summaryTemp;
