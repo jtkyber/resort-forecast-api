@@ -26,11 +26,19 @@ const clickUnitButton = async (page, units) => {
 const expandHourly = async (page) => {
     try {
         //Click buttons to expand hourly
-        await page.$$eval('.forecast-table-days__button', btns => btns[0].click());
-        await page.waitForSelector('.forecast-table-days__button.is-on-right');
+        await page.$$eval('.forecast-table-days__button', btns => {
+            btns[0].click();
+            btns[1].click();
+        });
+        await page.waitForFunction(() => document.querySelectorAll('.forecast-table-days__button.is-on-right').length >= 2);
+        // await page.waitForSelector('.forecast-table-days__button.is-on-right');
 
-        await page.$$eval('.forecast-table-days__button.is-on-right', btns => btns[0].click());
-        await page.waitForSelector('.forecast-table-days__cell.is-changed-t-h');
+        await page.$$eval('.forecast-table-days__button.is-on-right', btns => {
+            btns[0].click();
+            btns[1].click();
+        });
+        await page.waitForFunction(() => document.querySelectorAll('.forecast-table-days__cell.is-changed-t-h').length >= 2);
+        // await page.waitForSelector('.forecast-table-days__cell.is-changed-t-h');
     } catch(err) {
         console.log(err, 'expandHourly')
     }
@@ -59,104 +67,139 @@ const getBasicInfo = async (page, url, units) => {
     }
 }
 
-const getHourly = async (page, units) => {
+const getHourly = async (page, units, c) => {
     try {
         await expandHourly(page);
-
         //Get times
-        const timesArray = await page.$$eval('[data-row="time"] .is-changed-t-h > .forecast-table-time__container', (times) => {
+        const timesArray = await page.$$eval('[data-row="time"] .is-changed-t-h > .forecast-table-time__container', (times, c) => {
             const timeTemp = [];
+            let count = c ? 1 : 0;
             times.forEach((time, i) => {
-                if (!times[i+1]?.parentElement?.classList.contains('day-end')) {
-                    timeTemp.push(time.querySelector('.forecast-table-time__time').innerText + time.querySelector('.forecast-table-time__period').innerText);
+                if (count < 2) {
+                    let timeCorrected = time.querySelector('.forecast-table-time__time').innerText;
+                    if (timeCorrected == '0') {
+                        timeCorrected = timeCorrected.replace('0', '12');
+                    }
+                    timeTemp.push(timeCorrected + time.querySelector('.forecast-table-time__period').innerText);                
+                } 
+                if (time?.parentElement?.classList.contains('day-end') && count < 2) {
+                    count += 1;
                 }
             })
             return timeTemp;
-        })
+        }, c)
 
         //Get summaries
-        const summaryArray = await page.$$eval('[data-row="phrases"] .is-changed-t-h .forecast-table-phrases__value', (summaries) => {
+        const summaryArray = await page.$$eval('[data-row="phrases"] .is-changed-t-h .forecast-table-phrases__value', (summaries, c) => {
             const summaryTemp = [];
+            let count = c ? 1 : 0;
             summaries.forEach((summary, i) => {
-                if (!summary[i+1]?.parentElement?.parentElement?.classList.contains('day-end')) {
+                if (count < 2) {
                     let sumCorrected = summary.innerText;
                     if (sumCorrected.includes('shwrs')) {
                         sumCorrected = sumCorrected.replace('shwrs', 'showers');
                     }
 
                     summaryTemp.push(sumCorrected);
+                } 
+                if (summary?.parentElement?.parentElement?.classList.contains('day-end') && count < 2) {
+                    count += 1;
                 }
             })
             return summaryTemp;
-        })
+        }, c)
 
         //Get wind speed
-        const windSpeedArray = await page.$$eval('[data-row="wind"] .is-changed-t-h .wind-icon__val', (speeds, units) => {
+        const windSpeedArray = await page.$$eval('[data-row="wind"] .is-changed-t-h .wind-icon__val', (speeds, units, c) => {
             const unit = (units == 'Metric' ? 'km/h' : 'mph');
             const speedTemp = [];
+            let count = c ? 1 : 0;
             speeds.forEach((speed, i) => {
-                if (!speed[i+1]?.parentElement?.parentElement?.parentElement?.parentElement?.classList.contains('day-end')) {
+                if (count < 2) {
                     speedTemp.push(speed.textContent + unit);
+                } 
+                if (speed?.parentElement?.parentElement?.parentElement?.parentElement?.classList.contains('day-end') && count < 2) {
+                    count += 1;
                 }
             })
             return speedTemp;
-        }, units)
+        }, units, c)
 
         //Get wind direction
-        const windDirArray = await page.$$eval('[data-row="wind"] .is-changed-t-h .wind-icon__tooltip', (windDirs) => {
+        const windDirArray = await page.$$eval('[data-row="wind"] .is-changed-t-h .wind-icon__tooltip', (windDirs, c) => {
             const windDirTemp = [];
+            let count = c ? 1 : 0;
             windDirs.forEach((windDir, i) => {
-                if (!windDir[i+1]?.parentElement?.parentElement?.parentElement?.parentElement?.classList.contains('day-end')) {
+                if (count < 2) {
                     windDirTemp.push(windDir.textContent);
+                } 
+                if (windDir?.parentElement?.parentElement?.parentElement?.parentElement?.classList.contains('day-end') && count < 2) {
+                    count += 1;
                 }
             })
             return windDirTemp;
-        })
+        }, c)
 
         //Get snow forecast
-        const snowArray = await page.$$eval('[data-row="snow"] .is-changed-t-h .forecast-table-snow__value', (snowForecasts, units) => {
+        const snowArray = await page.$$eval('[data-row="snow"] .is-changed-t-h .forecast-table-snow__value', (snowForecasts, units, c) => {
             const unit = (units == 'Metric' ? 'cm' : 'in');
             const snowForecastTemp = [];
+            let count = c ? 1 : 0;
             snowForecasts.forEach((snowForecast, i) => {
-                if (!snowForecast[i+1]?.parentElement?.parentElement?.classList.contains('day-end')) {
+                if (count < 2) {
                     snowForecastTemp.push(parseFloat(snowForecast.innerText) ? snowForecast.innerText + unit : '0' + unit);
+                } 
+                if (snowForecast?.parentElement?.parentElement?.classList.contains('day-end') && count < 2) {
+                    count += 1;
                 }
             })
             return snowForecastTemp;
-        }, units)
+        }, units, c)
 
         //Get rain forecast
-        const rainArray = await page.$$eval('[data-row="rain"] .is-changed-t-h .forecast-table-rain__value', (rainForecasts, units) => {
+        const rainArray = await page.$$eval('[data-row="rain"] .is-changed-t-h .forecast-table-rain__value', (rainForecasts, units, c) => {
             const unit = (units == 'Metric' ? 'mm' : 'in');
             const rainForecastTemp = [];
+            let count = c ? 1 : 0;
             rainForecasts.forEach((rainForecast, i) => {
-                if (!rainForecast[i+1]?.parentElement?.parentElement?.classList.contains('day-end')) {
+                if (count < 2) {
                     rainForecastTemp.push(parseFloat(rainForecast.innerText) ? rainForecast.innerText + unit : '0' + unit);
+                } 
+                if (rainForecast?.parentElement?.parentElement?.classList.contains('day-end') && count < 2) {
+                    count += 1;
                 }
             })
             return rainForecastTemp;
-        }, units)
+        }, units, c)
 
         //Get max temp forecast
-        const maxTempArray = await page.$$eval('[data-row="temperature-max"] .is-changed-t-h .forecast-table-temp__value', (maxTs, units) => {
+        const maxTempArray = await page.$$eval('[data-row="temperature-max"] .is-changed-t-h .forecast-table-temp__value', (maxTs, units, c) => {
             const unit = (units == 'Metric' ? '°C' : '°F');
             const maxTtemp = [];
+            let count = c ? 1 : 0;
             maxTs.forEach((maxT, i) => {
-                if (!maxT[i+1]?.parentElement?.parentElement?.classList.contains('day-end')) {
+                if (count < 2) {
                     maxTtemp.push(maxT.innerText + unit);
+                } 
+                if (maxT?.parentElement?.parentElement?.classList.contains('day-end') && count < 2) {
+                    count += 1;
                 }
             })
             return maxTtemp;
-        }, units)
+        }, units, c)
 
         //Get max temp forecast
-        const minTempArray = await page.$$eval('[data-row="temperature-min"] .is-changed-t-h .forecast-table-temp__value', (minTs, units, maxTempArray) => {
+        const minTempArray = await page.$$eval('[data-row="temperature-min"] .is-changed-t-h .forecast-table-temp__value', (minTs, units, maxTempArray, c) => {
             const unit = (units == 'Metric' ? '°C' : '°F');
             const minTtemp = [];
+            let count = c ? 1 : 0;
             if (minTs.length >= maxTempArray.length) {
                 minTs.forEach((minT, i) => {
-                    if (!minT[i+1]?.parentElement?.parentElement?.classList.contains('day-end')) {
+                    if (count < 2) {
                         minTtemp.push(minT.innerText + unit);
+                    } 
+                    if (minT?.parentElement?.parentElement?.classList.contains('day-end') && count < 2) {
+                        count += 1;
                     }
                 })
             } else {
@@ -165,42 +208,54 @@ const getHourly = async (page, units) => {
                 })
             }
             return minTtemp;
-        }, units, maxTempArray)
+        }, units, maxTempArray, c)
 
         //Get wind chill
-        const windChillArray = await page.$$eval('[data-row="temperature-chill"] .is-changed-t-h .forecast-table-temp__value', (chills, units) => {
+        const windChillArray = await page.$$eval('[data-row="temperature-chill"] .is-changed-t-h .forecast-table-temp__value', (chills, units, c) => {
             const unit = (units == 'Metric' ? '°C' : '°F');
             const chillTemp = [];
+            let count = c ? 1 : 0;
             chills.forEach((chill, i) => {
-                if (!chill[i+1]?.parentElement?.parentElement?.classList.contains('day-end')) {
+                if (count < 2) {
                     chillTemp.push(chill.innerText + unit);
+                } 
+                if (chill?.parentElement?.parentElement?.classList.contains('day-end') && count < 2) {
+                    count += 1;
                 }
             })
             return chillTemp;
-        }, units)
+        }, units, c)
 
         //Get humidity
-        const humidityArray = await page.$$eval('[data-row="humidity"] .is-changed-t-h .forecast-table-humidity__value', (humidityCols) => {
+        const humidityArray = await page.$$eval('[data-row="humidity"] .is-changed-t-h .forecast-table-humidity__value', (humidityCols, c) => {
             const humidityTemp = [];
+            let count = c ? 1 : 0;
             humidityCols.forEach((humidityCol, i) => {
-                if (!humidityCol[i+1]?.parentElement?.parentElement?.classList.contains('day-end')) {
+                if (count < 2) {
                     humidityTemp.push(humidityCol.innerText + '%');
+                } 
+                if (humidityCol?.parentElement?.parentElement?.classList.contains('day-end') && count < 2) {
+                    count += 1;
                 }
             })
             return humidityTemp;
-        })
+        }, c)
 
         //Get freeze level
-        const freezeLevelArray = await page.$$eval('[data-row="freezing-level"] .is-changed-t-h .forecast-table-freezing-level__value', (freezeLevels, units) => {
+        const freezeLevelArray = await page.$$eval('[data-row="freezing-level"] .is-changed-t-h .forecast-table-freezing-level__value', (freezeLevels, units, c) => {
             const unit = (units == 'Metric' ? 'm' : 'ft');
             const freezeLevelTemp = [];
+            let count = c ? 1 : 0;
             freezeLevels.forEach((freezeLevel, i) => {
-                if (!freezeLevel[i+1]?.parentElement?.parentElement?.classList.contains('day-end')) {
+                if (count < 2) {
                     freezeLevelTemp.push(freezeLevel.innerText + unit);
+                } 
+                if (freezeLevel?.parentElement?.parentElement?.classList.contains('day-end') && count < 2) {
+                    count += 1;
                 }
             })
             return freezeLevelTemp;
-        }, units)
+        }, units, c)
 
         const hourlyArray = [];
         timesArray.forEach((time, i) => {
@@ -225,7 +280,7 @@ const getHourly = async (page, units) => {
     }
 }
 
-const handleUnitChange = async (page, url, elevation, units) => {
+const handleUnitChange = async (page, url, elevation, units, c) => {
     try {
         let hourlyForecast = {};
         let basicInfo = {};
@@ -233,7 +288,7 @@ const handleUnitChange = async (page, url, elevation, units) => {
         const handleElevationChange = async (newUrl) => {
             await page.goto(newUrl, { waitUntil: 'networkidle0' });
             await clickUnitButton(page, units);
-            return await getHourly(page, units);
+            return await getHourly(page, units, c);
         }
 
         if (!elevation && Object.keys(url).length === 3) {
@@ -290,6 +345,7 @@ const hourly = async (req, res, p, scrapedUrl) => {
         }
 
         const units = req?.query?.units;
+        const c = (req?.query?.c === 'true' ? true : null);
         const elevation = (req?.query?.el === 'top' || req?.query?.el === 'mid' || req?.query?.el === 'bot') ? req?.query?.el : null;
         var browser = await p.launch({headless: true, args: ['--no-sandbox']});
         const page = await browser.newPage();
@@ -307,10 +363,10 @@ const hourly = async (req, res, p, scrapedUrl) => {
         let resultMetric;
         let resultImperial;
         if (units === 'm' || units === undefined) {
-            resultMetric = await handleUnitChange(page, url, elevation, 'Metric')
+            resultMetric = await handleUnitChange(page, url, elevation, 'Metric', c)
         }
         if (units === 'i' || units === undefined) {
-            resultImperial = await handleUnitChange(page, url, elevation, 'Imperial')
+            resultImperial = await handleUnitChange(page, url, elevation, 'Imperial', c)
         }
         
         const result = {
