@@ -27,10 +27,10 @@ const expandHourly = async (page) => {
     try {
         //Click buttons to expand hourly
         await page.$$eval('.forecast-table-days__button', btns => btns[0].click());
-        await page.waitForFunction(() => document.querySelector('.forecast-table-days__button.is-on-right'));
+        await page.waitForSelector('.forecast-table-days__button.is-on-right');
 
         await page.$$eval('.forecast-table-days__button.is-on-right', btns => btns[0].click());
-        await page.waitForFunction(() => document.querySelector('.forecast-table-days__cell.is-changed-t-h'));
+        await page.waitForSelector('.forecast-table-days__cell.is-changed-t-h');
     } catch(err) {
         console.log(err, 'expandHourly')
     }
@@ -223,35 +223,43 @@ const getHourly = async (page, units) => {
 const handleUnitChange = async (page, url, elevation, units) => {
     try {
         let hourlyForecast = {};
+        let basicInfo = {};
 
-        if (!elevation) {
-            for (let i = 0; i <= 2; i++) {
-                await page.evaluate((i) => {
-                    const elevationBtn = document.querySelectorAll('#leftNav .elevation-control__link');
-                    elevationBtn[i].click();
-                }, i)
-    
-                await page.waitForNavigation();
-    
-                if (i == 0) {
-                    await clickUnitButton(page, units);
-                    hourlyForecast.topLift = await getHourly(page, units);
-                } else if (i == 1) {
-                    await clickUnitButton(page, units);
-                    hourlyForecast.midLift = await getHourly(page, units);
-                } else if (i == 2) {
-                    await clickUnitButton(page, units);
-                    hourlyForecast.botLift = await getHourly(page, units);
-                }
-            }
-        } else {
+        const handleElevationChange = async (newUrl) => {
+            await page.goto(newUrl, { waitUntil: 'networkidle0' });
             await clickUnitButton(page, units);
-            hourlyForecast.hourly = await getHourly(page, units);
+            return await getHourly(page, units);
         }
-        
 
-        //Get basic info (top/mid/bot lift elevations, lat/lon)
-        const basicInfo = await getBasicInfo(page, url, units);
+        if (!elevation && Object.keys(url).length === 3) {
+            // for (let i = 0; i <= 2; i++) {
+            //     //Go to new elevation
+            //     await page.evaluate((i) => {
+            //         const elevationBtn = document.querySelectorAll('#leftNav .elevation-control__link');
+            //         elevationBtn[i].click();
+            //     }, i)
+    
+            //     await page.waitForNavigation();
+    
+            //     if (i == 0) {
+            //         await clickUnitButton(page, units);
+            //         hourlyForecast.topLift = await getHourly(page, units);
+            //     } else if (i == 1) {
+            //         await clickUnitButton(page, units);
+            //         hourlyForecast.midLift = await getHourly(page, units);
+            //     } else if (i == 2) {
+            //         await clickUnitButton(page, units);
+            //         hourlyForecast.botLift = await getHourly(page, units);
+            //     }
+
+            hourlyForecast.topLift = await handleElevationChange(url.top);
+            hourlyForecast.midLift = await handleElevationChange(url.mid);
+            hourlyForecast.botLift = await handleElevationChange(url.bot);
+            basicInfo = await getBasicInfo(page, url.top, units);
+        } else {
+            hourlyForecast.forecast = await handleElevationChange(url);;
+            basicInfo = await getBasicInfo(page, url.top, units);
+        }
 
         return {
             ...hourlyForecast,
@@ -263,8 +271,19 @@ const handleUnitChange = async (page, url, elevation, units) => {
     }
 }
 
-const hourly = async (req, res, p, url) => {
+const hourly = async (req, res, p, scrapedUrl) => {
     try {
+        let url;
+        if (req?.query?.el === 'top' || req?.query?.el === 'mid' || req?.query?.el === 'bot') {
+            url = `${scrapedUrl}/${req?.query?.el}`;
+        } else {
+            url = {
+                top: `${scrapedUrl}/top`,
+                mid: `${scrapedUrl}/mid`,
+                bot: `${scrapedUrl}/bot`
+            }
+        }
+
         const units = req?.query?.units;
         const elevation = (req?.query?.el === 'top' || req?.query?.el === 'mid' || req?.query?.el === 'bot') ? req?.query?.el : null;
         var browser = await p.launch({headless: true, args: ['--no-sandbox']});
@@ -279,7 +298,6 @@ const hourly = async (req, res, p, url) => {
             else
                 request.continue();
         });
-        await page.goto(url, { waitUntil: 'domcontentloaded' });
 
         let resultMetric;
         let resultImperial;
@@ -294,15 +312,13 @@ const hourly = async (req, res, p, url) => {
             metric: resultMetric,
             imperial: resultImperial
         }
-
+        
         const u = (units === 'm' ? 'metric' : 'imperial')
         res.json(units ? result[u] : result);
     } catch (err) {
         console.log(err, 'forecast');
     } finally {
-        if (browser) {
-            browser.close();
-        }
+        await browser?.close();
     }
 }
 

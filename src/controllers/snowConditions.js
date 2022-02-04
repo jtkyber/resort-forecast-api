@@ -96,6 +96,7 @@ const getSnowConditions = ($, pageUnits, units) => {
 
 const snowConditions = (req, res, cheerio, request, url) => {
     try {
+        url += '/top';
         const units = req?.query?.units;
         request(url, (error, response, html) => {
             if (!error && response.statusCode == 200) {

@@ -1,10 +1,8 @@
 const getUrl = (req, request, cheerio) => {
     try {
-        const e = (req?.query?.el === 'top' || req?.query?.el === 'mid' || req?.query?.el === 'bot') ? `/${req?.query?.el}` : '/top';
         const name = req.params.resort;
         const formattedName = name.replace(/ /g,"+");
         const googleSearch = `https://www.google.com/search?q=${formattedName}+snow+forecast`;
-        let snowForcastUrl;
         return new Promise(resolve => {
             request(googleSearch, (error, response, html) => {
                 if (!error && response.statusCode == 200) {
@@ -17,15 +15,14 @@ const getUrl = (req, request, cheerio) => {
                                 const urlRegex = /(https?:\/\/[^ ]*)/;
                                 const extractedUrl = url.match(urlRegex)[1];
                                 const splicedUrl = extractedUrl.slice(0, extractedUrl.lastIndexOf("/"));
-                                const finalUrl = splicedUrl + e;
-                                if (finalUrl.length > 48 && finalUrl.length < 100) {
-                                    snowForcastUrl = finalUrl;
-                                    resolve(snowForcastUrl);
+                                const finalUrl = splicedUrl;
+                                if (finalUrl.length > 43 && finalUrl.length < 100) {
+                                    resolve(finalUrl);
                                 }
                             }
-                        } else resolve(false);
+                        } else resolve(false)
                     });
-                    resolve(false)
+                    resolve(false);
                 } else {
                     throw new Error('Error');
                 }
