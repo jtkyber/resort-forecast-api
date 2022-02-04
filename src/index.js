@@ -11,28 +11,65 @@ const getUrl = require('./controllers/getUrl');
 const hourly = require('./controllers/hourly');
 const forecast = require('./controllers/forecast');
 const snowConditions = require('./controllers/snowConditions');
-// const snowConditionsPup = require('./controllers/snowConditionsPup');
 
 let url = null;
+let result = null;
+let myTimer = null;
 
-app.use('/:resort', async (req, res, next) => { 
+//Middleware
+
+const waitAndSend = (req, res) => {
+    if (result) {
+        isFinished = true;
+        clearInterval(myTimer);
+        res.end(JSON.stringify(result, null, 2));
+    } else if (!result) {
+        if (!res.headersSent) {
+            res.writeHead(202);
+        }
+        res.write(" ");
+    }
+}
+
+app.use('/', async (req, res, next) => { 
+    url = null;
+    result = null;
+    myTimer = null;
+    next();
+})
+
+app.use('/:resort', async (req, res, next) => {
     url = await getUrl.getUrl(req, request, cheerio);
     if (url) {
+        myTimer = setInterval(waitAndSend, 25000, req, res);
         next();
     } else {
         res.status(400).json('Invalid resort name')
     }
 })
 
+//Endpoints
+
 app.get('/', (req, res) => { res.json('Working') })
 
-app.get('/:resort/hourly', (req, res) => { hourly.hourly(req, res, p, url) })
+app.get('/:resort/hourly', async (req, res) => { 
+    result = await hourly.hourly(req, res, p, url);
+    clearInterval(myTimer);
+    myTimer = setInterval(waitAndSend, 100, req, res);
+})
 
-app.get('/:resort/forecast', (req, res) => { forecast.forecast(req, res, p, url) })
+app.get('/:resort/forecast', async (req, res) => { 
+    result = await forecast.forecast(req, res, p, url);
+    clearInterval(myTimer);
+    myTimer = setInterval(waitAndSend, 100, req, res);
+})
 
-app.get('/:resort/snowConditions', (req, res) => { snowConditions.snowConditions(req, res, cheerio, request, url) })
+app.get('/:resort/snowConditions', async (req, res) => { 
+    result = await snowConditions.snowConditions(req, res, cheerio, request, url);
+    clearInterval(myTimer);
+    myTimer = setInterval(waitAndSend, 100, req, res);
+})
 
-// app.get('/:resort/snowConditions', (req, res) => { snowConditionsPup.snowConditionsPup(req, res, p, url) })
 
 app.listen(process.env.PORT || 3001, () => {
     console.log(`app is running on port ${process.env.PORT}`);

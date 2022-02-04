@@ -490,7 +490,7 @@ const forecast = async (req, res, p, scrapedUrl) => {
         }
         
         const u = (units === 'm' ? 'metric' : 'imperial')
-        res.json(units ? result[u] : result);
+        return (units ? result[u] : result);
     } catch (err) {
         console.log(err, 'forecast');
     } finally {

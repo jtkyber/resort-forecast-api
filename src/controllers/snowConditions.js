@@ -98,42 +98,47 @@ const snowConditions = (req, res, cheerio, request, url) => {
     try {
         url += '/top';
         const units = req?.query?.units;
-        request(url, (error, response, html) => {
-            if (!error && response.statusCode == 200) {
-                const $ = cheerio.load(html);
+        return new Promise(resolve => {
+            request(url, (error, response, html) => {
+                if (!error && response.statusCode == 200) {
+                    const $ = cheerio.load(html);
 
-                const pageUnits = $('.forecast-table-wind__header-container .windu').text() === 'mph' ? 'Imperial' : 'Metric';
+                    const pageUnits = $('.forecast-table-wind__header-container .windu').text() === 'mph' ? 'Imperial' : 'Metric';
 
-                let snowConditionsMetric = {};
-                let basicInfoMetric = {};
-                let snowConditionsImperial = {};
-                let basicInfoImperial = {};
+                    let snowConditionsMetric = {};
+                    let basicInfoMetric = {};
+                    let snowConditionsImperial = {};
+                    let basicInfoImperial = {};
 
-                if (units === 'm' || units === undefined) {
-                    snowConditionsMetric = getSnowConditions($, pageUnits, 'Metric');
-                    basicInfoMetric = getBasicInfo($, url, pageUnits, 'Metric');
-                }
-                if (units === 'i' || units === undefined) {
-                    snowConditionsImperial = getSnowConditions($, pageUnits, 'Imperial');
-                    basicInfoImperial = getBasicInfo($, url, pageUnits, 'Imperial');
-                }
-                
-                let result = {
-                    metric: {
-                        ...snowConditionsMetric,
-                        basicInfo: basicInfoMetric
-                    },
-                    imperial: {
-                        ...snowConditionsImperial,
-                        basicInfo: basicInfoImperial
+                    if (units === 'm' || units === undefined) {
+                        snowConditionsMetric = getSnowConditions($, pageUnits, 'Metric');
+                        basicInfoMetric = getBasicInfo($, url, pageUnits, 'Metric');
                     }
-                }
+                    if (units === 'i' || units === undefined) {
+                        snowConditionsImperial = getSnowConditions($, pageUnits, 'Imperial');
+                        basicInfoImperial = getBasicInfo($, url, pageUnits, 'Imperial');
+                    }
+                    
+                    let result = {
+                        metric: {
+                            ...snowConditionsMetric,
+                            basicInfo: basicInfoMetric
+                        },
+                        imperial: {
+                            ...snowConditionsImperial,
+                            basicInfo: basicInfoImperial
+                        }
+                    }
 
-                const u = (units === 'm' ? 'metric' : 'imperial')
-                res.json(units ? result[u] : result);
-            } else {
-                throw new Error('Error');
-            }
+                    const u = (units === 'm' ? 'metric' : 'imperial')
+                    // res.json(units ? result[u] : result);
+                    resolve(units ? result[u] : result);
+                } else {
+                    throw new Error('Error');
+                }
+            })
+        }).then(value => {
+            return value;
         })
     } catch (err) {
         console.log(err, 'getUrl');

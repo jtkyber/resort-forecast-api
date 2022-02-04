@@ -23,22 +23,26 @@ const clickUnitButton = async (page, units) => {
     }
 }
 
-const expandHourly = async (page) => {
+const expandHourly = async (page, c) => {
     try {
         //Click buttons to expand hourly
-        await page.$$eval('.forecast-table-days__button', btns => {
+        await page.$$eval('.forecast-table-days__button', (btns, c) => {
             btns[0].click();
-            btns[1].click();
-        });
-        await page.waitForFunction(() => document.querySelectorAll('.forecast-table-days__button.is-on-right').length >= 2);
-        // await page.waitForSelector('.forecast-table-days__button.is-on-right');
+            if (btns[1].classList.contains('.js-sign-up-no-free') && !c) {
+                btns[1].click();
+            }
+        }, c);
+        
+        await page.waitForSelector('.forecast-table-days__button.is-on-right');
 
-        await page.$$eval('.forecast-table-days__button.is-on-right', btns => {
+        await page.$$eval('.forecast-table-days__button.is-on-right', (btns, c) => {
             btns[0].click();
-            btns[1].click();
-        });
-        await page.waitForFunction(() => document.querySelectorAll('.forecast-table-days__cell.is-changed-t-h').length >= 2);
-        // await page.waitForSelector('.forecast-table-days__cell.is-changed-t-h');
+            if (btns[1] && !c) {
+                btns[1].click();
+            }
+        }, c);
+        
+        await page.waitForSelector('.forecast-table-days__cell.is-changed-t-h');
     } catch(err) {
         console.log(err, 'expandHourly')
     }
@@ -69,7 +73,7 @@ const getBasicInfo = async (page, url, units) => {
 
 const getHourly = async (page, units, c) => {
     try {
-        await expandHourly(page);
+        await expandHourly(page, c);
         //Get times
         const timesArray = await page.$$eval('[data-row="time"] .is-changed-t-h > .forecast-table-time__container', (times, c) => {
             const timeTemp = [];
@@ -333,6 +337,7 @@ const handleUnitChange = async (page, url, elevation, units, c) => {
 
 const hourly = async (req, res, p, scrapedUrl) => {
     try {
+        console.log('start')
         let url;
         if (req?.query?.el === 'top' || req?.query?.el === 'mid' || req?.query?.el === 'bot') {
             url = `${scrapedUrl}/${req?.query?.el}`;
@@ -375,7 +380,7 @@ const hourly = async (req, res, p, scrapedUrl) => {
         }
         
         const u = (units === 'm' ? 'metric' : 'imperial')
-        res.json(units ? result[u] : result);
+        return (units ? result[u] : result);
     } catch (err) {
         console.log(err, 'forecast');
     } finally {
