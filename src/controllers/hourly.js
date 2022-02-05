@@ -337,7 +337,6 @@ const handleUnitChange = async (page, url, elevation, units, c) => {
 
 const hourly = async (req, res, p, scrapedUrl) => {
     try {
-        console.log('start')
         let url;
         if (req?.query?.el === 'top' || req?.query?.el === 'mid' || req?.query?.el === 'bot') {
             url = `${scrapedUrl}/${req?.query?.el}`;
