@@ -26,23 +26,31 @@ const clickUnitButton = async (page, units) => {
 const expandHourly = async (page, c) => {
     try {
         //Click buttons to expand hourly
-        await page.$$eval('.forecast-table-days__button', (btns, c) => {
-            btns[0].click();
-            if (btns[1].classList.contains('.js-sign-up-no-free') && !c) {
-                btns[1].click();
-            }
-        }, c);
+        await page.$$eval('.forecast-table-days__button', (btns) => btns[0].click())
         
         await page.waitForSelector('.forecast-table-days__button.is-on-right');
 
-        await page.$$eval('.forecast-table-days__button.is-on-right', (btns, c) => {
-            btns[0].click();
-            if (btns[1] && !c) {
-                btns[1].click();
-            }
-        }, c);
+        await page.$$eval('.forecast-table-days__button.is-on-right', (btns) => btns[0].click())
         
         await page.waitForSelector('.forecast-table-days__cell.is-changed-t-h');
+
+        if (!c) {
+            await page.$$eval('.forecast-table-days__button', (btns) => {
+                if (!btns[1].classList.contains('.js-sign-up-no-free')) {
+                    btns[1].click();
+                }
+            });
+    
+            await page.waitForSelector('.forecast-table-days__button.is-on-right');
+    
+            await page.$$eval('.forecast-table-days__button.is-on-right', (btns) => {
+                if (btns[0]) {
+                    btns[0].click();
+                }
+            });
+
+            await page.waitForFunction(() => document.querySelectorAll('.forecast-table-days__cell.is-changed-t-h').length >= 2);
+        }
     } catch(err) {
         console.log(err, 'expandHourly')
     }
