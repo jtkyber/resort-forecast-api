@@ -23,33 +23,59 @@ const clickUnitButton = async (page, units) => {
     }
 }
 
+//Click buttons to expand hourly
 const expandHourly = async (page, c) => {
     try {
-        //Click buttons to expand hourly
-        await page.$$eval('.forecast-table-days__button', (btns) => btns[0].click())
+        //1st Buttons
+        const isBtn1Expand1 = await page.$$eval('.forecast-table-days__button', (btns) => {
+            if (btns[0]) {
+                btns[0].click();    
+                return true;            
+            }
+            return false;
+        })
         
-        await page.waitForSelector('.forecast-table-days__button.is-on-right');
-
-        await page.$$eval('.forecast-table-days__button.is-on-right', (btns) => btns[0].click())
-        
-        await page.waitForSelector('.forecast-table-days__cell.is-changed-t-h');
-
-        if (!c) {
-            await page.$$eval('.forecast-table-days__button', (btns) => {
-                if (!btns[1].classList.contains('.js-sign-up-no-free')) {
-                    btns[1].click();
-                }
-            });
-    
+        if (isBtn1Expand1) {
             await page.waitForSelector('.forecast-table-days__button.is-on-right');
-    
-            await page.$$eval('.forecast-table-days__button.is-on-right', (btns) => {
+        }
+        
+        const isBtn1Expand2 = await page.$$eval('.forecast-table-days__button.is-on-right', (btns) => {
+            if (btns[0]) {
+                btns[0].click();    
+                return true;            
+            }
+            return false;
+        })
+        
+        if (isBtn1Expand2) {
+            await page.waitForSelector('.forecast-table-days__cell.is-changed-t-h');
+        }
+
+        //2nd Buttons
+        if (!c) {
+            const isBtn2Expand1 = await page.$$eval('.forecast-table-days__button', (btns) => {
+                if (!btns[1].classList.contains('js-sign-up-no-free')) {
+                    btns[1].click();
+                    return true;
+                }
+                return false;
+            });
+
+            if (isBtn2Expand1) {
+                await page.waitForSelector('.forecast-table-days__button.is-on-right');
+            }
+            
+            const isBtn2Expand2 = await page.$$eval('.forecast-table-days__button.is-on-right', (btns) => {
                 if (btns[0]) {
                     btns[0].click();
-                }
+                    return true;
+                } 
+                return false;
             });
 
-            await page.waitForFunction(() => document.querySelectorAll('.forecast-table-days__cell.is-changed-t-h').length >= 2);
+            if (isBtn2Expand2) {
+                await page.waitForFunction(() => document.querySelectorAll('.forecast-table-days__cell.is-changed-t-h').length >= 2);
+            }
         }
     } catch(err) {
         console.log(err, 'expandHourly')
@@ -58,6 +84,7 @@ const expandHourly = async (page, c) => {
 
 const getBasicInfo = async (page, url, units) => {
     try {
+        console.log(url, 'hourly')
         const unit = units === 'Metric' ? 'm' : 'ft';
         const basicInfo = await page.evaluate((unit, url) => {
             const basicInfoObject = {};
@@ -330,7 +357,7 @@ const handleUnitChange = async (page, url, elevation, units, c) => {
             basicInfo = await getBasicInfo(page, url.top, units);
         } else {
             hourlyForecast.forecast = await handleElevationChange(url);;
-            basicInfo = await getBasicInfo(page, url.top, units);
+            basicInfo = await getBasicInfo(page, url, units);
         }
 
         return {
