@@ -25,7 +25,7 @@ const waitAndSend = (req, res) => {
         res.end(JSON.stringify(result, null, 2));
     } else if (!result) {
         if (!res.headersSent) {
-            res.writeHead(200, {'content-type':'application/json'});
+            res.writeHead(202, {'content-type':'application/json'});
         }
         res.write(" ");
     }
@@ -41,7 +41,7 @@ app.use('/', async (req, res, next) => {
 app.use('/:resort', async (req, res, next) => {
     url = await getUrl.getUrl(req, request, cheerio);
     if (url) {
-        myTimer = setInterval(waitAndSend, 2000, req, res);
+        myTimer = setInterval(waitAndSend, 25000, req, res);
         next();
     } else {
         res.status(400).json('Invalid resort name')
