@@ -445,14 +445,18 @@ const handleUnitChange = async (page, url, elevation, units) => {
             weeklyForecast.botLift = await handleElevationChange(url.bot);
             basicInfo = await getBasicInfo(page, url.top, units);
 
+            return {
+                ...weeklyForecast,
+                basicInfo
+            }
         } else {
-            weeklyForecast.forecast = await handleElevationChange(url);;
+            const forecast = await handleElevationChange(url);;
             basicInfo = await getBasicInfo(page, url.top, units);
-        }
 
-        return {
-            ...weeklyForecast,
-            basicInfo
+            return {
+                ...forecast,
+                basicInfo
+            }
         }
 
     } catch(err) {
