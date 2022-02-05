@@ -22,7 +22,9 @@ const waitAndSend = (req, res) => {
     if (result) {
         isFinished = true;
         clearInterval(myTimer);
-        res.end(JSON.stringify(result, null, 2));
+        if (!res.headersSent) {
+            res.json(result);
+        } else res.end(JSON.stringify(result, null, 2));
     } else if (!result) {
         if (!res.headersSent) {
             res.writeHead(202, {'content-type':'application/json'});
