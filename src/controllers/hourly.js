@@ -84,7 +84,6 @@ const expandHourly = async (page, c) => {
 
 const getBasicInfo = async (page, url, units) => {
     try {
-        console.log(url, 'hourly')
         const unit = units === 'Metric' ? 'm' : 'ft';
         const basicInfo = await page.evaluate((unit, url) => {
             const basicInfoObject = {};

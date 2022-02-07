@@ -1,6 +1,10 @@
-const getUrl = (req, request, cheerio) => {
+const getUrl = (req, request, cheerio, myCache) => {
     try {
         const name = req.params.resort;
+        if (myCache.has(name)) {
+            return (myCache.get(name));
+        }
+
         const formattedName = name.replace(/ /g,"+");
         const googleSearch = `https://www.google.com/search?q=${formattedName}+snow+forecast`;
         return new Promise(resolve => {
@@ -17,6 +21,7 @@ const getUrl = (req, request, cheerio) => {
                                 const splicedUrl = extractedUrl.slice(0, extractedUrl.lastIndexOf("/"));
                                 const finalUrl = splicedUrl;
                                 if (finalUrl.length > 43 && finalUrl.length < 100) {
+                                    myCache.set(`${name}`, finalUrl);
                                     resolve(finalUrl);
                                 }
                             }

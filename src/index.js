@@ -2,6 +2,8 @@ const request = require('request');
 const cheerio = require('cheerio');
 const p = require('puppeteer');
 const express = require('express');
+const NodeCache = require("node-cache");
+const myCache = new NodeCache();
 const cors = require('cors');
 const app = express();
 app.use(express.json());
@@ -15,11 +17,14 @@ const snowConditions = require('./controllers/snowConditions');
 let url = null;
 let result = null;
 let myTimer = null;
+let newUrlCached;
 
 //Middleware
 
 const waitAndSend = (req, res) => {
     if (result) {
+        myCache.set(`${newUrlCached}`, result, 600)
+
         isFinished = true;
         clearInterval(myTimer);
         if (!res.headersSent) {
@@ -41,10 +46,15 @@ app.use('/', async (req, res, next) => {
 })
 
 app.use('/:resort', async (req, res, next) => {
-    url = await getUrl.getUrl(req, request, cheerio);
+    url = await getUrl.getUrl(req, request, cheerio, myCache);
     if (url) {
-        myTimer = setInterval(waitAndSend, 25000, req, res);
-        next();
+        newUrlCached = url + Object.values(req.query).sort().toString();
+        if (myCache.has(newUrlCached)) {
+            res.json(myCache.get(newUrlCached));
+        } else {
+            myTimer = setInterval(waitAndSend, 25000, req, res);
+            next();
+        }
     } else {
         res.status(400).json('Invalid resort name')
     }
@@ -55,19 +65,19 @@ app.use('/:resort', async (req, res, next) => {
 app.get('/', (req, res) => { res.json('Working') })
 
 app.get('/:resort/hourly', async (req, res) => { 
-    result = await hourly.hourly(req, res, p, url);
+    result = await hourly.hourly(req, res, p, url, myCache);
     clearInterval(myTimer);
     myTimer = setInterval(waitAndSend, 100, req, res);
 })
 
 app.get('/:resort/forecast', async (req, res) => { 
-    result = await forecast.forecast(req, res, p, url);
+    result = await forecast.forecast(req, res, p, url, myCache);
     clearInterval(myTimer);
     myTimer = setInterval(waitAndSend, 100, req, res);
 })
 
 app.get('/:resort/snowConditions', async (req, res) => { 
-    result = await snowConditions.snowConditions(req, res, cheerio, request, url);
+    result = await snowConditions.snowConditions(req, res, cheerio, request, url, myCache);
     clearInterval(myTimer);
     myTimer = setInterval(waitAndSend, 100, req, res);
 })
