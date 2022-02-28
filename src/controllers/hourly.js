@@ -242,7 +242,7 @@ const getHourly = async (page, units, c) => {
                 })
             } else {
                 maxTempArray.forEach(() => {
-                    minTtemp.push('not found')  
+                    minTtemp.push(null)  
                 })
             }
             return minTtemp;

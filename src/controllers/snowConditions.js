@@ -69,22 +69,22 @@ const getSnowConditions = ($, pageUnits, units) => {
 
         $('.snow-depths-table__table > tbody > tr').each((i, row) => {
             if ($(row).find('th').text().toLowerCase() === 'top snow depth:') {
-                const topSnowDepth = $(row).find('.snowht').text() ? $(row).find('.snowht').text() : 'not found';
+                const topSnowDepth = $(row).find('.snowht').text() ? $(row).find('.snowht').text() : null;
                 if (parseInt(topSnowDepth)) {
                     snowDepthObject.topSnowDepth = (pageUnits !== units ? convert(parseInt(topSnowDepth), desiredUnits).toString() : topSnowDepth) + unit;
-                }
+                } else snowDepthObject.topSnowDepth = null;
             } else if ($(row).find('th').text().toLowerCase() === 'bottom snow depth:') {
-                const botSnowDepth = $(row).find('.snowht').text() ? $(row).find('.snowht').text() : 'not found';
+                const botSnowDepth = $(row).find('.snowht').text() ? $(row).find('.snowht').text() : null;
                 if (parseInt(botSnowDepth)) {
                     snowDepthObject.botSnowDepth = (pageUnits !== units ? convert(parseInt(botSnowDepth), desiredUnits).toString() : botSnowDepth) + unit;  
-                }
+                } else snowDepthObject.botSnowDepth = null;
             } else if ($(row).find('th').text().toLowerCase() === 'fresh snowfall depth:') {
-                const freshSnowfall = $(row).find('.snowht').text() ? $(row).find('.snowht').text() : 'not found';
+                const freshSnowfall = $(row).find('.snowht').text() ? $(row).find('.snowht').text() : null;
                 if (parseInt(freshSnowfall)) {
                     snowDepthObject.freshSnowfall = (pageUnits !== units ? convert(parseInt(freshSnowfall), desiredUnits).toString() : freshSnowfall) + unit;
-                }
+                } else snowDepthObject.freshSnowfall = null;
             } else if ($(row).find('th').text().toLowerCase() === 'last snowfall:') {
-                snowDepthObject.lastSnowfallDate = $(row).find('td').text() ? $(row).find('td').text().trim() : 'not found';
+                snowDepthObject.lastSnowfallDate = $(row).find('td').text() ? $(row).find('td').text().trim() : null;
             }
         })
         
