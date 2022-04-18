@@ -6,6 +6,7 @@ const NodeCache = require("node-cache");
 const myCache = new NodeCache();
 const cors = require('cors');
 const app = express();
+const nodemailer = require('nodemailer');
 app.use(express.json());
 app.use(cors());
 
