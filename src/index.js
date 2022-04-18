@@ -18,6 +18,7 @@ let url = null;
 let result = null;
 let myTimer = null;
 let newUrlCached;
+let bypassTimeoutCount = 0;
 
 //Middleware
 
@@ -31,10 +32,16 @@ const waitAndSend = (req, res) => {
             res.json(result);
         } else res.end(JSON.stringify(result, null, 2));
     } else if (!result) {
-        if (!res.headersSent) {
-            res.writeHead(202, {'content-type':'application/json'});
+        if (bypassTimeoutCount >= 1) {
+            bypassTimeoutCount = 0;
+            clearInterval(myTimer);
+            res.status(400).json('Could not retrieve forecast information');
+            return;
         }
+
+        if (!res.headersSent) res.writeHead(202, {'content-type':'application/json'});
         res.write(" ");
+        bypassTimeoutCount += 1;
     }
 }
 

@@ -12,7 +12,6 @@
   "license": "ISC",
   "dependencies": {
     "cheerio": "^1.0.0-rc.10",
-    "cluster": "^0.7.7",
     "cors": "^2.8.5",
     "express": "^4.17.2",
     "node-cache": "^5.1.2",
