@@ -20,8 +20,49 @@ let result = null;
 let myTimer = null;
 let newUrlCached;
 let bypassTimeoutCount = 0;
+let params;
+let query;
+let mailOptions = {};
 
 //Middleware
+
+const assignMailOptions = () => {
+    const formattedQuery = () => {
+        let queryString = '';
+        for (const [key, value] of Object.entries(query)) {
+            console.log(key, value)
+            queryString = queryString.concat(`${queryString.length ? ' | ' : ''}${key}: ${value}`)
+        }
+        return queryString;
+    }
+    mailOptions = {
+        from: 'resortweatherapi@gmail.com',
+        to: 'resortweatherapi@gmail.com',
+        subject: `'${params?.resort}' forecast retrieval timeout`,
+        html: `<h3>Server reached the maximum amount of time allowed to retrieve forecast information for '${params?.resort}'</h3>
+        <p>Resort Name: ${params?.resort}</p>
+        <p>Query Params: ${formattedQuery()}</p>
+        <p>Url: ${url}/mid</p>`
+    };
+}
+
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: 'resortweatherapi@gmail.com',
+        pass: 'Potato_16'
+    }
+}); 
+
+const sendEmail = () => {
+    transporter.sendMail(mailOptions, function(error, info) {
+        if (error) {
+            console.log(error);
+        } else {
+            console.log('Email sent: ' + info.response);
+        }
+    });
+}
 
 const waitAndSend = (req, res) => {
     if (result) {
@@ -36,6 +77,7 @@ const waitAndSend = (req, res) => {
         if (bypassTimeoutCount >= 1) {
             bypassTimeoutCount = 0;
             clearInterval(myTimer);
+            sendEmail();
             res.status(400).json('Could not retrieve forecast information');
             return;
         }
@@ -54,7 +96,10 @@ app.use('/', async (req, res, next) => {
 })
 
 app.use('/:resort', async (req, res, next) => {
+    params = req.params;
+    query = req.query;
     url = await getUrl.getUrl(req, request, cheerio, myCache);
+    assignMailOptions();
     if (url) {
         newUrlCached = url + Object.values(req.query).sort().toString();
         if (myCache.has(newUrlCached)) {
