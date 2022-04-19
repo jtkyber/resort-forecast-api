@@ -78,7 +78,7 @@ const waitAndSend = (req, res) => {
             bypassTimeoutCount = 0;
             clearInterval(myTimer);
             sendEmail();
-            res.status(400).json('Could not retrieve forecast information');
+            res.status(504).json('Could not retrieve forecast information within the allotted time limit');
             return;
         }
 
