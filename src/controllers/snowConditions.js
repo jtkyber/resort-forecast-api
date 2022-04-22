@@ -65,24 +65,27 @@ const getSnowConditions = ($, pageUnits, units) => {
         const unit = (units === 'Metric' ? 'cm' : 'in');
         const desiredUnits = (units === 'Metric' ? 'in' : 'cm');
         const convert = (units === 'Metric' ? toMetric : toImperial);
-        const snowDepthObject = {};
+        const snowDepthObject = {
+            topSnowDepth: null,
+            botSnowDepth: null,
+            freshSnowfall: null,
+            lastSnowfallDate: null
+        };
+        const isNum = (num) => (parseFloat(num) || num == 0) ? true : false;
 
         $('.snow-depths-table__table > tbody > tr').each((i, row) => {
             if ($(row).find('th').text().toLowerCase() === 'top snow depth:') {
                 const topSnowDepth = $(row).find('.snowht').text() ? $(row).find('.snowht').text() : null;
-                if (parseInt(topSnowDepth)) {
-                    snowDepthObject.topSnowDepth = (pageUnits !== units ? convert(parseInt(topSnowDepth), desiredUnits).toString() : topSnowDepth) + unit;
-                } else snowDepthObject.topSnowDepth = null;
+                if (!isNum(topSnowDepth)) return;
+                snowDepthObject.topSnowDepth = (pageUnits !== units ? convert(parseFloat(topSnowDepth), desiredUnits).toString() : Math.round(topSnowDepth)) + unit;
             } else if ($(row).find('th').text().toLowerCase() === 'bottom snow depth:') {
                 const botSnowDepth = $(row).find('.snowht').text() ? $(row).find('.snowht').text() : null;
-                if (parseInt(botSnowDepth)) {
-                    snowDepthObject.botSnowDepth = (pageUnits !== units ? convert(parseInt(botSnowDepth), desiredUnits).toString() : botSnowDepth) + unit;  
-                } else snowDepthObject.botSnowDepth = null;
+                if (!isNum(botSnowDepth)) return;
+                snowDepthObject.botSnowDepth = (pageUnits !== units ? convert(parseFloat(botSnowDepth), desiredUnits).toString() : Math.round(botSnowDepth)) + unit;  
             } else if ($(row).find('th').text().toLowerCase() === 'fresh snowfall depth:') {
                 const freshSnowfall = $(row).find('.snowht').text() ? $(row).find('.snowht').text() : null;
-                if (parseInt(freshSnowfall)) {
-                    snowDepthObject.freshSnowfall = (pageUnits !== units ? convert(parseInt(freshSnowfall), desiredUnits).toString() : freshSnowfall) + unit;
-                } else snowDepthObject.freshSnowfall = null;
+                if (!isNum(freshSnowfall)) return;
+                snowDepthObject.freshSnowfall = (pageUnits !== units ? convert(parseFloat(freshSnowfall), desiredUnits).toString() : Math.round(freshSnowfall)) + unit;
             } else if ($(row).find('th').text().toLowerCase() === 'last snowfall:') {
                 snowDepthObject.lastSnowfallDate = $(row).find('td').text() ? $(row).find('td').text().trim() : null;
             }
