@@ -6,7 +6,7 @@ const NodeCache = require("node-cache");
 const myCache = new NodeCache();
 const cors = require('cors');
 const app = express();
-// const nodemailer = require('nodemailer');
+const nodemailer = require('nodemailer');
 app.use(express.json());
 app.use(cors());
 
@@ -22,46 +22,45 @@ let newUrlCached;
 // let bypassTimeoutCount = 0;
 // let params;
 // let query;
-// let mailOptions = {};
+let resortName;
+let mailOptions = {};
 
 //Middleware
 
-// const assignMailOptions = () => {
-//     const formattedQuery = () => {
-//         let queryString = '';
-//         for (const [key, value] of Object.entries(query)) {
-//             queryString = queryString.concat(`${queryString.length ? ' | ' : ''}${key}: ${value}`)
-//         }
-//         return queryString;
-//     }
-//     mailOptions = {
-//         from: 'resortweatherapi@gmail.com',
-//         to: 'resortweatherapi@gmail.com',
-//         subject: `'${params?.resort}' forecast retrieval timeout`,
-//         html: `<h3>Server reached the maximum amount of time allowed to retrieve forecast information for '${params?.resort}'</h3>
-//         <p>Resort Name: ${params?.resort}</p>
-//         <p>Query Params: ${formattedQuery()}</p>
-//         <p>Url: ${url}/mid</p>`
-//     };
-// }
+const assignMailOptions = () => {
+    // const formattedQuery = () => {
+    //     let queryString = '';
+    //     for (const [key, value] of Object.entries(query)) {
+    //         queryString = queryString.concat(`${queryString.length ? ' | ' : ''}${key}: ${value}`)
+    //     }
+    //     return queryString;
+    // }
 
-// const transporter = nodemailer.createTransport({
-//     service: 'gmail',
-//     auth: {
-//         user: 'resortweatherapi@gmail.com',
-//         pass: 'Potato_16'
-//     }
-// }); 
+    mailOptions = {
+        from: 'resortweatherapi@gmail.com',
+        to: 'resortweatherapi@gmail.com',
+        subject: `Invalid Resort Name Entered`,
+        html: `<h3>Resort: ${resortName}</h3>`
+    };
+}
 
-// const sendEmail = () => {
-//     transporter.sendMail(mailOptions, function(error, info) {
-//         if (error) {
-//             console.log(error);
-//         } else {
-//             console.log('Email sent: ' + info.response);
-//         }
-//     });
-// }
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: 'resortweatherapi@gmail.com',
+        pass: 'Potato_16'
+    }
+}); 
+
+const sendEmail = () => {
+    transporter.sendMail(mailOptions, function(error, info) {
+        if (error) {
+            console.log(error);
+        } else {
+            console.log('Email sent: ' + info.response);
+        }
+    });
+}
 
 // const waitAndSend = (req, res) => {
 //     if (result) {
@@ -98,7 +97,9 @@ app.use('/:resort', async (req, res, next) => {
     // params = req.params;
     // query = req.query;
     url = await getUrl.getUrl(req, request, cheerio, myCache);
-    // assignMailOptions();
+    resortName = req.params.resort;
+    assignMailOptions();
+
     if (url) {
         newUrlCached = url + Object.values(req.query).sort().toString();
         if (myCache.has(newUrlCached)) {
@@ -108,6 +109,8 @@ app.use('/:resort', async (req, res, next) => {
             next();
         }
     } else {
+        console.log(req.params.resort)
+        sendEmail();
         res.status(400).json('Invalid resort name')
     }
 })
