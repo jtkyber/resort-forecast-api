@@ -6,7 +6,7 @@ const getUrl = (req, request, cheerio, myCache) => {
         }
 
         const formattedName = name.replace(/ /g,"+");
-        const googleSearch = `https://www.google.com/search?q=${formattedName}+snow+forecast`;
+        const googleSearch = `https://www.google.com/search?q=${formattedName}+snow+forecast+6day`;
         return new Promise(resolve => {
             request(googleSearch, (error, response, html) => {
                 if (!error && response.statusCode == 200) {
@@ -23,6 +23,7 @@ const getUrl = (req, request, cheerio, myCache) => {
                                 if (finalUrl.length > 43 && finalUrl.length < 100) {
                                     myCache.set(`${name}`, finalUrl);
                                     resolve(finalUrl);
+                                    return false
                                 }
                             }
                         } else resolve(false)
