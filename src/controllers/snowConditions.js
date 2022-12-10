@@ -41,13 +41,13 @@ const getBasicInfo = ($, url, pageUnits, units) => {
 
         basicInfo.url = url;
 
-        const topLiftElevation = $('#leftNav .elevation-control__link--top > .height').text();
+        const topLiftElevation = $('.sidebar .elevation-control__link--top > .height').text();
         basicInfo.topLiftElevation = (pageUnits !== units ? convert(parseInt(topLiftElevation), desiredUnits).toString() : topLiftElevation) + unit;
 
-        const midLiftElevation = $('#leftNav .elevation-control__link--mid > .height').text();
+        const midLiftElevation = $('.sidebar .elevation-control__link--mid > .height').text();
         basicInfo.midLiftElevation = (pageUnits !== units ? convert(parseInt(midLiftElevation), desiredUnits).toString() : midLiftElevation) + unit;
 
-        const botLiftElevation = $('#leftNav .elevation-control__link--bot > .height').text();
+        const botLiftElevation = $('.sidebar .elevation-control__link--bot > .height').text();
         basicInfo.botLiftElevation = (pageUnits !== units ? convert(parseInt(botLiftElevation), desiredUnits).toString() : botLiftElevation) + unit;
 
         basicInfo.lat = $('.longitude').attr('title');

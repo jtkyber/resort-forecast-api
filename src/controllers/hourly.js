@@ -1,5 +1,6 @@
 const clickUnitButton = async (page, units) => {
     try {
+        console.log("clickUnitButton")
         // Click corresponding units button
         await page.$$eval('.forecast-table__headers .unit-button', (btns, units) => {
             let selectedBtn;
@@ -26,33 +27,44 @@ const clickUnitButton = async (page, units) => {
 //Click buttons to expand hourly
 const expandHourly = async (page, c) => {
     try {
+        console.log("expandHourly")
         //1st Buttons
+        console.log("expand 1")
         const isBtn1Expand1 = await page.$$eval('.forecast-table-days__button', (btns) => {
-            if (btns[0]) {
-                btns[0].click();    
-                return true;            
+            for (let i = 0; i < btns.length; i++) {
+                if (!btns[i].classList.contains("is-collapse")) {
+                    btns[i].click();    
+                    return true;            
+                }
             }
             return false;
         })
         
         if (isBtn1Expand1) {
-            await page.waitForSelector('.forecast-table-days__button.is-on-right');
+            console.log("b1 expanded")
+            await page.waitForSelector('.forecast-table-days__cell.is-expanded-t');
         }
         
-        const isBtn1Expand2 = await page.$$eval('.forecast-table-days__button.is-on-right', (btns) => {
-            if (btns[0]) {
-                btns[0].click();    
-                return true;            
+        console.log("expand 2")
+        const isBtn1Expand2 = await page.$$eval('.forecast-table-days__button', (btns) => {
+            for (let i = 0; i < btns.length; i++) {
+                if (!btns[i].classList.contains("is-collapse")) {
+                    btns[i].click();    
+                    return true;            
+                }
             }
             return false;
         })
         
         if (isBtn1Expand2) {
-            await page.waitForSelector('.forecast-table-days__cell.is-changed-t-h');
+            console.log("b2 expanded")
+            await page.waitForSelector('.forecast-table-days__cell.is-expanded-h');
+            console.log("hourly loaded")
         }
 
         //2nd Buttons
         if (!c) {
+            console.log("getting next day hrs")
             const isBtn2Expand1 = await page.$$eval('.forecast-table-days__button', (btns) => {
                 if (!btns[1].classList.contains('js-sign-up-no-free')) {
                     btns[1].click();
@@ -74,7 +86,7 @@ const expandHourly = async (page, c) => {
             });
 
             if (isBtn2Expand2) {
-                await page.waitForFunction(() => document.querySelectorAll('.forecast-table-days__cell.is-changed-t-h').length >= 2);
+                await page.waitForFunction(() => document.querySelectorAll('.forecast-table-days__cell.is-expanded-h').length >= 2);
             }
         }
     } catch(err) {
@@ -84,6 +96,7 @@ const expandHourly = async (page, c) => {
 
 const getBasicInfo = async (page, url, units) => {
     try {
+        console.log("getBasicInfo")
         const unit = units === 'Metric' ? 'm' : 'ft';
         const basicInfo = await page.evaluate((unit, url) => {
             const basicInfoObject = {};
@@ -92,9 +105,9 @@ const getBasicInfo = async (page, url, units) => {
             basicInfoObject.region = region[1].innerText;
             basicInfoObject.name = name[0].innerText;
             basicInfoObject.url = url;
-            basicInfoObject.topLiftElevation = document.querySelector('#leftNav .elevation-control__link--top > .height').innerText + unit;
-            basicInfoObject.midLiftElevation = document.querySelector('#leftNav .elevation-control__link--mid > .height').innerText + unit;
-            basicInfoObject.botLiftElevation = document.querySelector('#leftNav .elevation-control__link--bot > .height').innerText + unit;
+            basicInfoObject.topLiftElevation = document.querySelector('.sidebar .elevation-control__link--top > .height').innerText + unit;
+            basicInfoObject.midLiftElevation = document.querySelector('.sidebar .elevation-control__link--mid > .height').innerText + unit;
+            basicInfoObject.botLiftElevation = document.querySelector('.sidebar .elevation-control__link--bot > .height').innerText + unit;
             basicInfoObject.lat = document.querySelector('.latitude').getAttribute('title');
             basicInfoObject.lon = document.querySelector('.longitude').getAttribute('title');
             return basicInfoObject;
@@ -107,9 +120,10 @@ const getBasicInfo = async (page, url, units) => {
 
 const getHourly = async (page, units, c) => {
     try {
+        console.log("getHourly")
         await expandHourly(page, c);
         //Get times
-        const timesArray = await page.$$eval('[data-row="time"] .is-changed-t-h > .forecast-table-time__container', (times, c) => {
+        const timesArray = await page.$$eval('[data-row="time"] .is-expanded-h > .forecast-table-time__container', (times, c) => {
             const timeTemp = [];
             let count = c ? 1 : 0;
             times.forEach((time, i) => {
@@ -128,7 +142,7 @@ const getHourly = async (page, units, c) => {
         }, c)
 
         //Get summaries
-        const summaryArray = await page.$$eval('[data-row="phrases"] .is-changed-t-h .forecast-table-phrases__value', (summaries, c) => {
+        const summaryArray = await page.$$eval('[data-row="phrases"] .is-expanded-h .forecast-table-phrases__value', (summaries, c) => {
             const summaryTemp = [];
             let count = c ? 1 : 0;
             summaries.forEach((summary, i) => {
@@ -148,7 +162,7 @@ const getHourly = async (page, units, c) => {
         }, c)
 
         //Get wind speed
-        const windSpeedArray = await page.$$eval('[data-row="wind"] .is-changed-t-h .wind-icon__val', (speeds, units, c) => {
+        const windSpeedArray = await page.$$eval('[data-row="wind"] .is-expanded-h .wind-icon__val', (speeds, units, c) => {
             const unit = (units == 'Metric' ? 'km/h' : 'mph');
             const speedTemp = [];
             let count = c ? 1 : 0;
@@ -164,7 +178,7 @@ const getHourly = async (page, units, c) => {
         }, units, c)
 
         //Get wind direction
-        const windDirArray = await page.$$eval('[data-row="wind"] .is-changed-t-h .wind-icon__tooltip', (windDirs, c) => {
+        const windDirArray = await page.$$eval('[data-row="wind"] .is-expanded-h .wind-icon__tooltip', (windDirs, c) => {
             const windDirTemp = [];
             let count = c ? 1 : 0;
             windDirs.forEach((windDir, i) => {
@@ -179,7 +193,7 @@ const getHourly = async (page, units, c) => {
         }, c)
 
         //Get snow forecast
-        const snowArray = await page.$$eval('[data-row="snow"] .is-changed-t-h .forecast-table-snow__value', (snowForecasts, units, c) => {
+        const snowArray = await page.$$eval('[data-row="snow"] .is-expanded-h .forecast-table-snow__value', (snowForecasts, units, c) => {
             const unit = (units == 'Metric' ? 'cm' : 'in');
             const snowForecastTemp = [];
             let count = c ? 1 : 0;
@@ -195,7 +209,7 @@ const getHourly = async (page, units, c) => {
         }, units, c)
 
         //Get rain forecast
-        const rainArray = await page.$$eval('[data-row="rain"] .is-changed-t-h .forecast-table-rain__value', (rainForecasts, units, c) => {
+        const rainArray = await page.$$eval('[data-row="rain"] .is-expanded-h .forecast-table-rain__value', (rainForecasts, units, c) => {
             const unit = (units == 'Metric' ? 'mm' : 'in');
             const rainForecastTemp = [];
             let count = c ? 1 : 0;
@@ -211,7 +225,7 @@ const getHourly = async (page, units, c) => {
         }, units, c)
 
         //Get max temp forecast
-        const maxTempArray = await page.$$eval('[data-row="temperature-max"] .is-changed-t-h .forecast-table-temp__value', (maxTs, units, c) => {
+        const maxTempArray = await page.$$eval('[data-row="temperature-max"] .is-expanded-h .forecast-table-temp__value', (maxTs, units, c) => {
             const unit = (units == 'Metric' ? '°C' : '°F');
             const maxTtemp = [];
             let count = c ? 1 : 0;
@@ -227,7 +241,7 @@ const getHourly = async (page, units, c) => {
         }, units, c)
 
         //Get max temp forecast
-        const minTempArray = await page.$$eval('[data-row="temperature-min"] .is-changed-t-h .forecast-table-temp__value', (minTs, units, maxTempArray, c) => {
+        const minTempArray = await page.$$eval('[data-row="temperature-min"] .is-expanded-h .forecast-table-temp__value', (minTs, units, maxTempArray, c) => {
             const unit = (units == 'Metric' ? '°C' : '°F');
             const minTtemp = [];
             let count = c ? 1 : 0;
@@ -249,7 +263,7 @@ const getHourly = async (page, units, c) => {
         }, units, maxTempArray, c)
 
         //Get wind chill
-        const windChillArray = await page.$$eval('[data-row="temperature-chill"] .is-changed-t-h .forecast-table-temp__value', (chills, units, c) => {
+        const windChillArray = await page.$$eval('[data-row="temperature-chill"] .is-expanded-h .forecast-table-temp__value', (chills, units, c) => {
             const unit = (units == 'Metric' ? '°C' : '°F');
             const chillTemp = [];
             let count = c ? 1 : 0;
@@ -265,7 +279,7 @@ const getHourly = async (page, units, c) => {
         }, units, c)
 
         //Get humidity
-        const humidityArray = await page.$$eval('[data-row="humidity"] .is-changed-t-h .forecast-table-humidity__value', (humidityCols, c) => {
+        const humidityArray = await page.$$eval('[data-row="humidity"] .is-expanded-h .forecast-table-humidity__value', (humidityCols, c) => {
             const humidityTemp = [];
             let count = c ? 1 : 0;
             humidityCols.forEach((humidityCol, i) => {
@@ -280,7 +294,7 @@ const getHourly = async (page, units, c) => {
         }, c)
 
         //Get freeze level
-        const freezeLevelArray = await page.$$eval('[data-row="freezing-level"] .is-changed-t-h .forecast-table-freezing-level__value', (freezeLevels, units, c) => {
+        const freezeLevelArray = await page.$$eval('[data-row="freezing-level"] .is-expanded-h .forecast-table-freezing-level__value', (freezeLevels, units, c) => {
             const unit = (units == 'Metric' ? 'm' : 'ft');
             const freezeLevelTemp = [];
             let count = c ? 1 : 0;
@@ -311,7 +325,6 @@ const getHourly = async (page, units, c) => {
                 freezeLevel: freezeLevelArray[i]
             })
         })
-
         return hourlyArray;
     } catch(err) {
         console.log(err, 'getHourly')
@@ -324,7 +337,8 @@ const handleUnitChange = async (page, url, elevation, units, c) => {
         let basicInfo = {};
 
         const handleElevationChange = async (newUrl) => {
-            await page.goto(newUrl, { waitUntil: 'networkidle0' });
+            console.log("handleUnitChange " + newUrl)
+            await page.goto(newUrl, { waitUntil: 'domcontentloaded' });
             await clickUnitButton(page, units);
             return await getHourly(page, units, c);
         }
@@ -371,6 +385,7 @@ const handleUnitChange = async (page, url, elevation, units, c) => {
 
 const hourly = async (req, res, p, scrapedUrl) => {
     try {
+        console.log("hourly")
         let url;
         if (req?.query?.el === 'top' || req?.query?.el === 'mid' || req?.query?.el === 'bot') {
             url = `${scrapedUrl}/${req?.query?.el}`;
@@ -383,7 +398,8 @@ const hourly = async (req, res, p, scrapedUrl) => {
         }
 
         const units = req?.query?.units;
-        const c = (req?.query?.c === 'true' ? true : null);
+        let c = (req?.query?.c === 'true' ? true : null);
+        c = true;
         const elevation = (req?.query?.el === 'top' || req?.query?.el === 'mid' || req?.query?.el === 'bot') ? req?.query?.el : null;
         var browser = await p.launch({headless: true, args: ['--no-sandbox']});
         const page = await browser.newPage();

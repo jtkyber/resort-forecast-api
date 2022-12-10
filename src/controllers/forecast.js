@@ -12,6 +12,7 @@ const clickUnitButton = async (page, units) => {
             return;
         }, units)
 
+
         //Wait for units on page to change after clicking btn
         await page.waitForFunction((units) => 
             document.querySelector('.snow-depths-table__table > tbody > tr > td > .snowu').innerText == (units == 'Metric' ? 'cm' : 'in'),
@@ -33,9 +34,9 @@ const getBasicInfo = async (page, url, units) => {
             basicInfoObject.region = region[1].innerText;
             basicInfoObject.name = name[0].innerText;
             basicInfoObject.url = url;
-            basicInfoObject.topLiftElevation = document.querySelector('#leftNav .elevation-control__link--top > .height').innerText + unit;
-            basicInfoObject.midLiftElevation = document.querySelector('#leftNav .elevation-control__link--mid > .height').innerText + unit;
-            basicInfoObject.botLiftElevation = document.querySelector('#leftNav .elevation-control__link--bot > .height').innerText + unit;
+            basicInfoObject.topLiftElevation = document.querySelector('.sidebar .elevation-control__link--top > .height').innerText + unit;
+            basicInfoObject.midLiftElevation = document.querySelector('.sidebar .elevation-control__link--mid > .height').innerText + unit;
+            basicInfoObject.botLiftElevation = document.querySelector('.sidebar .elevation-control__link--bot > .height').innerText + unit;
             basicInfoObject.lat = document.querySelector('.latitude').getAttribute('title');
             basicInfoObject.lon = document.querySelector('.longitude').getAttribute('title');
             return basicInfoObject;
