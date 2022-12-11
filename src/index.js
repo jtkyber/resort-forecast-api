@@ -15,6 +15,8 @@ const hourly = require('./controllers/hourly');
 const forecast = require('./controllers/forecast');
 const snowConditions = require('./controllers/snowConditions');
 
+const skiMapScrapers = require('./weatherScraper');
+
 let url = null;
 // let result = null;
 // let myTimer = null;
@@ -147,6 +149,45 @@ app.get('/:resort/snowConditions', async (req, res) => {
 })
 
 
+
+
 app.listen(process.env.PORT || 3001, () => {
     console.log(`app is running on port ${process.env.PORT}`);
+})
+
+
+
+
+//Ski Map Scrapers
+
+let pathPlusName;
+let result;
+
+const sendResult = (req, res) => {
+    if (req.path == '/ski-map/scrapeSnowForecast' || req.path == '/ski-map/scrapeOpenSnow') {
+        myCache.set(`${pathPlusName}`, result);
+    } else {
+        myCache.set(`${pathPlusName}`, result, 600);
+    }
+    res.json(result);
+}
+
+app.get('/ski-map/scrapeCurrentWeather', async (req, res) => { 
+    result = await skiMapScrapers.scrapeCurrentWeather(req, res, request, cheerio);
+    sendResult(req, res);
+})
+
+app.get('/ski-map/scrapeWeeklyWeather', async (req, res) => { 
+    result = await skiMapScrapers.scrapeWeeklyWeather(req, res, request, cheerio);
+    sendResult(req, res);
+})
+
+app.get('/ski-map/scrapeSnowForecast', async (req, res) => { 
+    result = await skiMapScrapers.scrapeSnowForecast(req, res, request, cheerio);
+    sendResult(req, res);
+})
+
+app.get('/ski-map/scrapeOpenSnow', async (req, res) => {
+    result = await skiMapScrapers.scrapeOpenSnow(req, res, request, cheerio);
+    sendResult(req, res);
 })
