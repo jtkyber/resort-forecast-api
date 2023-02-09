@@ -465,7 +465,7 @@ const handleUnitChange = async (page, url, elevation, units) => {
     }
 }
 
-const forecast = async (req, res, p, scrapedUrl) => {
+const forecast = async (req, res, p, chrome, scrapedUrl) => {
     try {
         let url;
         if (req?.query?.el === 'top' || req?.query?.el === 'mid' || req?.query?.el === 'bot') {
@@ -482,7 +482,13 @@ const forecast = async (req, res, p, scrapedUrl) => {
         const units = req?.query?.units;
         const elevation = (req?.query?.el === 'top' || req?.query?.el === 'mid' || req?.query?.el === 'bot') ? req?.query?.el : null;
 
-        var browser = await p.launch({headless: true, args: ['--no-sandbox']});
+        var browser = await p.launch({
+            args: [...chrome.args, '--hide-scrollbars', '--disable-web-security'],
+            defaultViewport: chrome.defaultViewport,
+            executablePath: await chrome.executablePath,
+            headless: true,
+            ignoreHTTPSErrors: true,
+        });
         const page = await browser.newPage();
         await page.setDefaultTimeout(60000);
         await page.setRequestInterception(true);

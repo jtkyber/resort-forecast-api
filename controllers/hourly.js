@@ -383,7 +383,7 @@ const handleUnitChange = async (page, url, elevation, units, c) => {
     }
 }
 
-const hourly = async (req, res, p, scrapedUrl) => {
+const hourly = async (req, res, p, chrome, scrapedUrl) => {
     try {
         console.log("hourly")
         let url;
@@ -401,7 +401,13 @@ const hourly = async (req, res, p, scrapedUrl) => {
         let c = (req?.query?.c === 'true' ? true : null);
         c = true;
         const elevation = (req?.query?.el === 'top' || req?.query?.el === 'mid' || req?.query?.el === 'bot') ? req?.query?.el : null;
-        var browser = await p.launch({headless: true, args: ['--no-sandbox']});
+        var browser = await p.launch({
+            args: [...chrome.args, '--hide-scrollbars', '--disable-web-security'],
+            defaultViewport: chrome.defaultViewport,
+            executablePath: await chrome.executablePath,
+            headless: true,
+            ignoreHTTPSErrors: true,
+        });
         const page = await browser.newPage();
         await page.setDefaultTimeout(90000);
         await page.setRequestInterception(true);

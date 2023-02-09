@@ -1,6 +1,7 @@
 const request = require('request');
 const cheerio = require('cheerio');
-const p = require('puppeteer');
+let p;
+let chrome = {};
 const express = require('express');
 const NodeCache = require("node-cache");
 const myCache = new NodeCache();
@@ -8,6 +9,15 @@ const cors = require('cors');
 const app = express();
 app.use(express.json());
 app.use(cors());
+
+if (process.env.AWS_LAMBDA_FUNCTION_VERSION) {
+    // running on the Vercel platform.
+    chrome = require('chrome-aws-lambda');
+    p = require('puppeteer-core');
+  } else {
+    // running locally.
+    p = require('puppeteer');
+  }
 
 const getUrl = require('./controllers/getUrl');
 const hourly = require('./controllers/hourly');
@@ -64,7 +74,7 @@ app.use('/:resort', async (req, res, next) => {
 app.get('/', (req, res) => { res.json('Working') })
 
 app.get('/:resort/hourly', async (req, res) => { 
-    const result = await hourly.hourly(req, res, p, url, myCache);
+    const result = await hourly.hourly(req, res, p, chrome, url, myCache);
     myCache.set(`${newUrlCached}`, result, 600)
     
     res.json(result);
@@ -73,7 +83,7 @@ app.get('/:resort/hourly', async (req, res) => {
 })
 
 app.get('/:resort/forecast', async (req, res) => { 
-    const result = await forecast.forecast(req, res, p, url, myCache);
+    const result = await forecast.forecast(req, res, p, chrome, url, myCache);
     myCache.set(`${newUrlCached}`, result, 600)
     
     res.json(result);
