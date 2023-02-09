@@ -38,6 +38,10 @@ app.use('/', async (req, res, next) => {
 app.use('/:resort', async (req, res, next) => {
     // params = req.params;
     // query = req.query;
+    if (req?.query?.lat) {
+        next();
+        return;
+    }
     url = await getUrl.getUrl(req, request, cheerio, myCache);
     resortName = req.params.resort;
     
@@ -93,7 +97,7 @@ let pathPlusName;
 let result;
 
 const sendResult = (req, res) => {
-    if (req.path == '/ski-map/scrapeSnowForecast' || req.path == '/ski-map/scrapeOpenSnow') {
+    if (req.path == '/scrapeSnowForecast' || req.path == '/scrapeOpenSnow') {
         myCache.set(`${pathPlusName}`, result);
     } else {
         myCache.set(`${pathPlusName}`, result, 600);
@@ -101,22 +105,22 @@ const sendResult = (req, res) => {
     res.json(result);
 }
 
-app.get('/ski-map/scrapeCurrentWeather', async (req, res) => { 
+app.get('/scrapeCurrentWeather', async (req, res) => {
     result = await skiMapScrapers.scrapeCurrentWeather(req, res, request, cheerio);
     sendResult(req, res);
 })
 
-app.get('/ski-map/scrapeWeeklyWeather', async (req, res) => { 
+app.get('/scrapeWeeklyWeather', async (req, res) => { 
     result = await skiMapScrapers.scrapeWeeklyWeather(req, res, request, cheerio);
     sendResult(req, res);
 })
 
-app.get('/ski-map/scrapeSnowForecast', async (req, res) => { 
+app.get('/scrapeSnowForecast', async (req, res) => { 
     result = await skiMapScrapers.scrapeSnowForecast(req, res, request, cheerio);
     sendResult(req, res);
 })
 
-app.get('/ski-map/scrapeOpenSnow', async (req, res) => {
+app.get('/scrapeOpenSnow', async (req, res) => {
     result = await skiMapScrapers.scrapeOpenSnow(req, res, request, cheerio);
     sendResult(req, res);
 })
@@ -124,7 +128,7 @@ app.get('/ski-map/scrapeOpenSnow', async (req, res) => {
 
 
 app.listen(process.env.PORT || 3001, () => {
-    console.log(`app is running on port ${process.env.PORT}`);
+    console.log(`app is running on port ${process.env.PORT || 3001}`);
 })
 
 
