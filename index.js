@@ -28,7 +28,7 @@ const skiMapScrapers = require('./weatherScraper');
 
 let url = null;
 let newUrlCached;
-// let resortName; xsx
+// let resortName; xsxf
 // let result = null;
 // let myTimer = null;
 // let bypassTimeoutCount = 0;
