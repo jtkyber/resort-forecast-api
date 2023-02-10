@@ -14,10 +14,10 @@ if (process.env.AWS_LAMBDA_FUNCTION_VERSION) {
     // running on the Vercel platform.
     chrome = require('chrome-aws-lambda');
     p = require('puppeteer-core');
-  } else {
+} else {
     // running locally.
     p = require('puppeteer');
-  }
+}
 
 const getUrl = require('./controllers/getUrl');
 const hourly = require('./controllers/hourly');
