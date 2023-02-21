@@ -23,7 +23,7 @@ let newUrlCached;
 // let myTimer = null;
 // let bypassTimeoutCount = 0;
 // let params;
-// let query;
+// let query; 
 
 //Middleware
 
