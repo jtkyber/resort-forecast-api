@@ -154,26 +154,27 @@ const getForecast = async (page, units) => {
         })
 
         //Get snow forecast
-        const snowArray = await page.$$eval('.forecast-table-snow__container > .snow', (snowForecasts, units) => {
+        const snowArray = await page.$$eval('.forecast-table-snow__cell > .snow-amount', (snowForecasts, units) => {
             const unit = (units == 'Metric' ? 'cm' : 'in');
             const snowForecastTemp = [];
             let snowForecastChunk = {};
             let startSelection = false;
             let count = 0;
             snowForecasts.forEach((snowForecast, i) => {
+                const snowForecastText = snowForecast.querySelector('.snow')?.innerText;
                 if (i <= 17) {
-                    if (startSelection && snowForecast.parentElement.parentElement.classList.contains('day-end')) {
-                        snowForecastChunk.night = parseFloat(snowForecast.innerText) ? snowForecast.innerText + unit : '0' + unit;
+                    if (startSelection && snowForecast.parentElement.classList.contains('day-end')) {
+                        snowForecastChunk.night = parseFloat(snowForecastText) ? snowForecastText + unit : '0' + unit;
                         snowForecastTemp.push(snowForecastChunk);
                         snowForecastChunk = {};
                         count = 0;
                     } else if (startSelection && count === 0) {
-                        snowForecastChunk.am = parseFloat(snowForecast.innerText) ? snowForecast.innerText + unit : '0' + unit;
+                        snowForecastChunk.am = parseFloat(snowForecastText) ? snowForecastText + unit : '0' + unit;
                         count++;
                     } else if (startSelection && count === 1) {
-                        snowForecastChunk.pm = parseFloat(snowForecast.innerText) ? snowForecast.innerText + unit : '0' + unit;
+                        snowForecastChunk.pm = parseFloat(snowForecastText) ? snowForecastText + unit : '0' + unit;
                         count++;
-                    } else if (!startSelection && snowForecast.parentElement.parentElement.classList.contains('day-end')) {
+                    } else if (!startSelection && snowForecast.parentElement.classList.contains('day-end')) {
                         startSelection = true;
                     } 
                 }
@@ -482,7 +483,7 @@ const forecast = async (req, res, p, scrapedUrl) => {
         const units = req?.query?.units;
         const elevation = (req?.query?.el === 'top' || req?.query?.el === 'mid' || req?.query?.el === 'bot') ? req?.query?.el : null;
 
-        var browser = await p.launch({headless: true, args: ['--no-sandbox']});
+        var browser = await p.launch({headless: true, args: ['--no-sandbox'], dumpio: true});
         const page = await browser.newPage();
         await page.setDefaultTimeout(60000);
         await page.setRequestInterception(true);
@@ -494,6 +495,7 @@ const forecast = async (req, res, p, scrapedUrl) => {
             else
                 request.continue();
         });
+        
         // await page.goto(url, { waitUntil: 'domcontentloaded' });
 
         let resultMetric;

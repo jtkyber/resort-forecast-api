@@ -106,8 +106,6 @@ const sendResult = (req, res) => {
 }
 
 app.get('/scrapeCurrentWeather', async (req, res) => {
-    // res.json('test')
-    console.log('test')
     result = await skiMapScrapers.scrapeCurrentWeather(req, res, request, cheerio);
     sendResult(req, res);
 })
