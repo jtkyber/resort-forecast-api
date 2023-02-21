@@ -483,7 +483,7 @@ const forecast = async (req, res, p, scrapedUrl) => {
         const units = req?.query?.units;
         const elevation = (req?.query?.el === 'top' || req?.query?.el === 'mid' || req?.query?.el === 'bot') ? req?.query?.el : null;
 
-        var browser = await p.launch({headless: true, args: ['--no-sandbox'], dumpio: true});
+        var browser = await p.launch({headless: true, args: ['--no-sandbox']});
         const page = await browser.newPage();
         await page.setDefaultTimeout(60000);
         await page.setRequestInterception(true);
