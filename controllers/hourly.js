@@ -401,7 +401,7 @@ const hourly = async (req, res, p, scrapedUrl) => {
         let c = (req?.query?.c === 'true' ? true : null);
         c = true;
         const elevation = (req?.query?.el === 'top' || req?.query?.el === 'mid' || req?.query?.el === 'bot') ? req?.query?.el : null;
-        var browser = await p.launch({headless: true, args: ['--no-sandbox']});
+        var browser = await p.launch({headless: true, executablePath: "google-chrome", args: ['--no-sandbox', '--disable-setuid-sandbox']});
         const page = await browser.newPage();
         await page.setDefaultTimeout(90000);
         await page.setRequestInterception(true);
