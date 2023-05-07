@@ -404,7 +404,7 @@ const hourly = async (req, res, p, scrapedUrl) => {
         const elevation = (req?.query?.el === 'top' || req?.query?.el === 'mid' || req?.query?.el === 'bot') ? req?.query?.el : null;
         var browser = await p.launch({
             headless: true, 
-            // executablePath: "google-chrome", 
+            executablePath: "google-chrome", 
             // executablePath: "./chrome-win/chrome.exe", 
             args: ['--no-sandbox', '--disable-setuid-sandbox']
         });
