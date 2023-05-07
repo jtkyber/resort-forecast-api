@@ -67,7 +67,7 @@ app.get('/', (req, res) => { res.json('Working') })
 
 app.get('/:resort/hourly', async (req, res) => { 
     const result = await hourly.hourly(req, res, p, url, myCache);
-    myCache.set(`${newUrlCached}`, result, 600)
+    myCache.set(`${newUrlCached}`, result, 1200)
     
     res.json(result);
     // clearInterval(myTimer);
@@ -76,7 +76,7 @@ app.get('/:resort/hourly', async (req, res) => {
 
 app.get('/:resort/forecast', async (req, res) => { 
     const result = await forecast.forecast(req, res, p, url, myCache);
-    myCache.set(`${newUrlCached}`, result, 600)
+    myCache.set(`${newUrlCached}`, result, 1800)
     
     res.json(result);
     // clearInterval(myTimer);
@@ -85,7 +85,7 @@ app.get('/:resort/forecast', async (req, res) => {
 
 app.get('/:resort/snowConditions', async (req, res) => { 
     const result = await snowConditions.snowConditions(req, res, cheerio, request, url, myCache);
-    myCache.set(`${newUrlCached}`, result, 600)
+    myCache.set(`${newUrlCached}`, result, 1200)
     
     res.json(result); 
     // clearInterval(myTimer);
