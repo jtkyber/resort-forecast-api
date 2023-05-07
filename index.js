@@ -43,12 +43,11 @@ app.use('/:resort', async (req, res, next) => {
         return;
     }
     url = await getUrl.getUrl(req, request, cheerio, myCache);
-    resortName = req.params.resort;
+    // resortName = req.params.resort;
     
     if (url) {
         // newUrlCached = url + Object.values(req.query).sort().toString();
-        newUrlCached = req.originalUrl;
-        // console.log(req.originalUrl)
+        newUrlCached = req.originalUrl.toLowerCase();
         if (myCache.has(newUrlCached)) {
             res.json(myCache.get(newUrlCached));
         } else {
