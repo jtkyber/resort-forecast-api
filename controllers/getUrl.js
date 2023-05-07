@@ -1,6 +1,6 @@
 const getUrl = (req, request, cheerio, myCache) => {
     try {
-        const name = req.params.resort;
+        const name = req.params.resort.toLowerCase();
         if (myCache.has(name)) {
             return (myCache.get(name));
         }
