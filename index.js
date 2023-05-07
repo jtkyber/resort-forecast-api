@@ -92,6 +92,8 @@ app.get('/:resort/snowConditions', async (req, res) => {
     // myTimer = setInterval(waitAndSend, 100, req, res);
 })
 
+//fasdfa
+
 
 //Ski Map Scrapers
 
