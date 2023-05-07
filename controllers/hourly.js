@@ -13,9 +13,10 @@ const clickUnitButton = async (page, units) => {
             return;
         }, units)
 
+
         //Wait for units on page to change after clicking btn
         await page.waitForFunction((units) => 
-            document.querySelector('.snow-depths-table__table > tbody > tr > td > .snowu').innerText == (units == 'Metric' ? 'cm' : 'in'),
+            document.querySelector('.forecast-table-wind__header-container > .windu').innerText == (units == 'Metric' ? 'km/h' : 'mph'),
             {},
             units
         );
@@ -401,7 +402,12 @@ const hourly = async (req, res, p, scrapedUrl) => {
         let c = (req?.query?.c === 'true' ? true : null);
         c = true;
         const elevation = (req?.query?.el === 'top' || req?.query?.el === 'mid' || req?.query?.el === 'bot') ? req?.query?.el : null;
-        var browser = await p.launch({headless: true, executablePath: "google-chrome", args: ['--no-sandbox', '--disable-setuid-sandbox']});
+        var browser = await p.launch({
+            headless: true, 
+            executablePath: "google-chrome", 
+            // executablePath: "./chrome-win/chrome.exe", 
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+        });
         const page = await browser.newPage();
         await page.setDefaultTimeout(90000);
         await page.setRequestInterception(true);
@@ -413,6 +419,14 @@ const hourly = async (req, res, p, scrapedUrl) => {
             else
                 request.continue();
         });
+
+        // page.on('console', async (msg) => {
+        //     const msgArgs = msg.args();
+        //     const logValues = await Promise.all(msgArgs.map(async arg => await arg.jsonValue()));
+        //     if (logValues.length) {
+        //         console.log(...logValues);
+        //     }
+        // })
 
         let resultMetric;
         let resultImperial;

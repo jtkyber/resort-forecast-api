@@ -46,7 +46,9 @@ app.use('/:resort', async (req, res, next) => {
     resortName = req.params.resort;
     
     if (url) {
-        newUrlCached = url + Object.values(req.query).sort().toString();
+        // newUrlCached = url + Object.values(req.query).sort().toString();
+        newUrlCached = req.originalUrl;
+        // console.log(req.originalUrl)
         if (myCache.has(newUrlCached)) {
             res.json(myCache.get(newUrlCached));
         } else {
@@ -93,37 +95,37 @@ app.get('/:resort/snowConditions', async (req, res) => {
 
 //Ski Map Scrapers
 
-let pathPlusName;
-let result;
+// let pathPlusName;
+// let result;
 
-const sendResult = (req, res) => {
-    if (req.path == '/scrapeSnowForecast' || req.path == '/scrapeOpenSnow') {
-        myCache.set(`${pathPlusName}`, result);
-    } else {
-        myCache.set(`${pathPlusName}`, result, 600);
-    }
-    res.json(result);
-}
+// const sendResult = (req, res) => {
+//     if (req.path == '/scrapeSnowForecast' || req.path == '/scrapeOpenSnow') {
+//         myCache.set(`${pathPlusName}`, result);
+//     } else {
+//         myCache.set(`${pathPlusName}`, result, 600);
+//     }
+//     res.json(result);
+// }
 
-app.get('/scrapeCurrentWeather', async (req, res) => {
-    result = await skiMapScrapers.scrapeCurrentWeather(req, res, request, cheerio);
-    sendResult(req, res);
-})
+// app.get('/scrapeCurrentWeather', async (req, res) => {
+//     result = await skiMapScrapers.scrapeCurrentWeather(req, res, request, cheerio);
+//     sendResult(req, res);
+// })
 
-app.get('/scrapeWeeklyWeather', async (req, res) => { 
-    result = await skiMapScrapers.scrapeWeeklyWeather(req, res, request, cheerio);
-    sendResult(req, res);
-})
+// app.get('/scrapeWeeklyWeather', async (req, res) => { 
+//     result = await skiMapScrapers.scrapeWeeklyWeather(req, res, request, cheerio);
+//     sendResult(req, res);
+// })
 
-app.get('/scrapeSnowForecast', async (req, res) => { 
-    result = await skiMapScrapers.scrapeSnowForecast(req, res, request, cheerio);
-    sendResult(req, res);
-})
+// app.get('/scrapeSnowForecast', async (req, res) => { 
+//     result = await skiMapScrapers.scrapeSnowForecast(req, res, request, cheerio);
+//     sendResult(req, res);
+// })
 
-app.get('/scrapeOpenSnow', async (req, res) => {
-    result = await skiMapScrapers.scrapeOpenSnow(req, res, request, cheerio);
-    sendResult(req, res);
-})
+// app.get('/scrapeOpenSnow', async (req, res) => {
+//     result = await skiMapScrapers.scrapeOpenSnow(req, res, request, cheerio);
+//     sendResult(req, res);
+// })
 
 
 
