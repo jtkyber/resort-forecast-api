@@ -14,7 +14,7 @@ const hourly = require('./controllers/hourly');
 const forecast = require('./controllers/forecast');
 const snowConditions = require('./controllers/snowConditions');
 
-const skiMapScrapers = require('./weatherScraper');
+// const skiMapScrapers = require('./weatherScraper');
 
 let url = null;
 let newUrlCached;
