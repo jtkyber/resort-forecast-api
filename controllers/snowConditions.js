@@ -87,7 +87,9 @@ const getSnowConditions = ($, pageUnits, units) => {
                 if (!isNum(freshSnowfall)) return;
                 snowDepthObject.freshSnowfall = (pageUnits !== units ? convert(parseFloat(freshSnowfall), desiredUnits).toString() : Math.round(freshSnowfall)) + unit;
             } else if ($(row).find('th').text().toLowerCase() === 'last snowfall:') {
-                snowDepthObject.lastSnowfallDate = $(row).find('td').text() ? $(row).find('td').text().trim() : null;
+                const lastSnowfallDate = $(row).find('td').text() ? $(row).find('td').text().trim() : null;
+                if (lastSnowfallDate.length < 2) return
+                snowDepthObject.lastSnowfallDate = lastSnowfallDate
             }
         })
         
