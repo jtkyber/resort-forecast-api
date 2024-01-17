@@ -2,7 +2,7 @@ const request = require('request');
 const cheerio = require('cheerio');
 const p = require('puppeteer');
 const express = require('express');
-const NodeCache = require("node-cache");
+const NodeCache = require('node-cache');
 const myCache = new NodeCache();
 const cors = require('cors');
 const app = express();
@@ -23,74 +23,74 @@ let newUrlCached;
 // let myTimer = null;
 // let bypassTimeoutCount = 0;
 // let params;
-// let query; 
+// let query;
 
 //Middleware
 
- 
-app.use('/', async (req, res, next) => { 
-    url = null;
-    // result = null;
-    // myTimer = null;
-    next();
-})
+app.use('/', async (req, res, next) => {
+	url = null;
+	// result = null;
+	// myTimer = null;
+	next();
+});
 
 app.use('/:resort', async (req, res, next) => {
-    // params = req.params;
-    // query = req.query;
-    if (req?.query?.lat) {
-        next();
-        return;
-    }
-    url = await getUrl.getUrl(req, request, cheerio, myCache);
-    // resortName = req.params.resort;
-    
-    if (url) {
-        // newUrlCached = url + Object.values(req.query).sort().toString();
-        newUrlCached = req.originalUrl.toLowerCase();
-        if (myCache.has(newUrlCached)) {
-            res.json(myCache.get(newUrlCached));
-        } else {
-            // myTimer = setInterval(waitAndSend, 25000, req, res);
-            next();
-        }
-    } else {
-        console.log(req.params.resort)
-        res.status(400).json('Invalid resort name')
-    }
-})
+	// params = req.params;
+	// query = req.query;
+	if (req?.query?.lat) {
+		next();
+		return;
+	}
+	url = await getUrl.getUrl(req, request, cheerio, myCache);
+	// resortName = req.params.resort;
+
+	if (url) {
+		// newUrlCached = url + Object.values(req.query).sort().toString();
+		newUrlCached = req.originalUrl.toLowerCase();
+		if (myCache.has(newUrlCached)) {
+			res.json(myCache.get(newUrlCached));
+		} else {
+			// myTimer = setInterval(waitAndSend, 25000, req, res);
+			next();
+		}
+	} else {
+		console.log(req.params.resort);
+		res.status(400).json('Invalid resort name');
+	}
+});
 
 //Endpoints
 
-app.get('/', (req, res) => { res.json('Working') })
+app.get('/', (req, res) => {
+	res.json('Working');
+});
 
-app.get('/:resort/hourly', async (req, res) => { 
-    const result = await hourly.hourly(req, res, p, url, myCache);
-    myCache.set(`${newUrlCached}`, result, 1200)
-    
-    res.json(result);
-    // clearInterval(myTimer);
-    // myTimer = setInterval(waitAndSend, 100, req, res);
-})
+app.get('/:resort/hourly', async (req, res) => {
+	const result = await hourly.hourly(req, res, p, url, myCache);
+	myCache.set(`${newUrlCached}`, result, 1200);
 
-app.get('/:resort/forecast', async (req, res) => { 
-    const result = await forecast.forecast(req, res, p, url, myCache);
-    myCache.set(`${newUrlCached}`, result, 1800)
-    
-    res.json(result);
-    // clearInterval(myTimer);
-    // myTimer = setInterval(waitAndSend, 100, req, res);
-})
+	res.json(result);
+	// clearInterval(myTimer);
+	// myTimer = setInterval(waitAndSend, 100, req, res);
+});
 
-app.get('/:resort/snowConditions', async (req, res) => { 
-    const result = await snowConditions.snowConditions(req, res, cheerio, request, url, myCache);
-    myCache.set(`${newUrlCached}`, result, 1200)
-    
-    res.json(result); 
-    // clearInterval(myTimer);
-    // myTimer = setInterval(waitAndSend, 100, req, res);
-})
+app.get('/:resort/forecast', async (req, res) => {
+	const result = await forecast.forecast(req, res, p, url, myCache);
+	myCache.set(`${newUrlCached}`, result, 1800);
 
+	res.json(result);
+	// clearInterval(myTimer);
+	// myTimer = setInterval(waitAndSend, 100, req, res);
+});
+
+app.get('/:resort/snowConditions', async (req, res) => {
+	const result = await snowConditions.snowConditions(req, res, cheerio, request, url, myCache);
+	myCache.set(`${newUrlCached}`, result, 1200);
+
+	res.json(result);
+	// clearInterval(myTimer);
+	// myTimer = setInterval(waitAndSend, 100, req, res);
+});
 
 //Ski Map Scrapers
 
@@ -111,12 +111,12 @@ app.get('/:resort/snowConditions', async (req, res) => {
 //     sendResult(req, res);
 // })
 
-// app.get('/scrapeWeeklyWeather', async (req, res) => { 
+// app.get('/scrapeWeeklyWeather', async (req, res) => {
 //     result = await skiMapScrapers.scrapeWeeklyWeather(req, res, request, cheerio);
 //     sendResult(req, res);
 // })
 
-// app.get('/scrapeSnowForecast', async (req, res) => { 
+// app.get('/scrapeSnowForecast', async (req, res) => {
 //     result = await skiMapScrapers.scrapeSnowForecast(req, res, request, cheerio);
 //     sendResult(req, res);
 // })
@@ -126,25 +126,9 @@ app.get('/:resort/snowConditions', async (req, res) => {
 //     sendResult(req, res);
 // })
 
-
-
 app.listen(process.env.PORT || 3001, () => {
-    console.log(`app is running on port ${process.env.PORT || 3001}`);
-})
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	console.log(`app is running on port ${process.env.PORT || 3001}`);
+});
 
 // const waitAndSend = (req, res) => {
 //     if (result) {
