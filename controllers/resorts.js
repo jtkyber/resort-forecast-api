@@ -28,8 +28,9 @@ const getResorts = async (page, region = false) => {
 			);
 
 			const resortNames = await page.$$eval('.location-navigation #resort option', options => {
-				return options.map(option => option.value).filter(o => !o.disabled);
+				return options.map(option => option.value);
 			});
+			resortNames.shift();
 
 			resortObject[regionName] = resortNames;
 		}
