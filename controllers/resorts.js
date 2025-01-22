@@ -1,16 +1,16 @@
-const getResorts = async (page, country = false) => {
+const getResorts = async (page, region = false) => {
 	try {
 		const resortObject = {};
-		// Get all country values
-		const countries = await getCountries(page);
+		// Get all region values
+		const regions = await getRegions(page);
 
-		for (let i = 0; i < countries.values.length; i++) {
-			const countryValue = countries.values[i];
-			const countryName = countries.names[i];
+		for (let i = 0; i < regions.values.length; i++) {
+			const regionValue = regions.values[i];
+			const regionName = regions.names[i];
 
-			if (country && country !== countryName) continue;
+			if (region && region !== regionName) continue;
 
-			page.select('.location-navigation #feature', countryValue);
+			page.select('.location-navigation #feature', regionValue);
 
 			await page.waitForFunction(
 				() => {
@@ -31,7 +31,7 @@ const getResorts = async (page, country = false) => {
 				return options.map(option => option.value).filter(o => !o.disabled);
 			});
 
-			resortObject[countryName] = resortNames;
+			resortObject[regionName] = resortNames;
 		}
 
 		return resortObject;
@@ -40,21 +40,21 @@ const getResorts = async (page, country = false) => {
 	}
 };
 
-const getCountries = async page => {
-	const countries = await page.$$eval('.location-navigation #feature option', options => {
-		let countriesTemp = { values: [], names: [] };
+const getRegions = async page => {
+	const regions = await page.$$eval('.location-navigation #feature option', options => {
+		let regionsTemp = { values: [], names: [] };
 		for (let option of options) {
 			if (!isNaN(option.value)) {
-				countriesTemp.names.push(option.innerText);
-				countriesTemp.values.push(option.value);
+				regionsTemp.names.push(option.innerText);
+				regionsTemp.values.push(option.value);
 			}
 		}
-		return countriesTemp;
+		return regionsTemp;
 	});
-	return countries;
+	return regions;
 };
 
-const allResorts = async (req, res, p, flag) => {
+const resorts = async (req, res, p, flag) => {
 	try {
 		const url = 'https://www.snow-forecast.com/countries';
 		var browser = await p.launch({
@@ -87,11 +87,11 @@ const allResorts = async (req, res, p, flag) => {
 			case 'all':
 				result = await getResorts(page);
 				break;
-			case 'countries':
-				result = (await getCountries(page)).names;
+			case 'regions':
+				result = (await getRegions(page)).names;
 				break;
-			case 'resortsInCountry':
-				result = await getResorts(page, req.query.country);
+			case 'resortsInRegion':
+				result = await getResorts(page, req.query.region);
 				break;
 			default:
 				result = await getResorts(page);
@@ -100,12 +100,12 @@ const allResorts = async (req, res, p, flag) => {
 
 		return result;
 	} catch (err) {
-		console.log(err, 'allResorts');
+		console.log(err, 'resorts');
 	} finally {
 		await browser?.close();
 	}
 };
 
 module.exports = {
-	allResorts,
+	resorts,
 };

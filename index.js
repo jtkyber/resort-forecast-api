@@ -10,7 +10,7 @@ app.use(express.json());
 app.use(cors());
 
 const getUrl = require('./controllers/getUrl');
-const allResorts = require('./controllers/allResorts');
+const resorts = require('./controllers/resorts');
 const hourly = require('./controllers/hourly');
 const forecast = require('./controllers/forecast');
 const snowConditions = require('./controllers/snowConditions');
@@ -36,21 +36,20 @@ app.use('/', async (req, res, next) => {
 });
 
 app.use('/:resort', async (req, res, next) => {
-	if (req?.query?.lat) {
+	if (req?.query?.lat || req?.params?.resort === 'resorts' || req?.params?.resort === 'regions') {
 		next();
 		return;
 	}
+
 	const resortName = req.params.resort.toLowerCase().replace(/\s+/g, ' ').replace(' ', '-').trim();
 
 	if (myCache.has(`url_${resortName}`)) {
 		url = myCache.get(`url_${resortName}`);
-		cacheKey = resortName + Object.values(req.query).sort().toString();
 	} else {
 		url = await getUrl.getUrl(req, res, p, resortName);
-		cacheKey = resortName + Object.values(req.query).sort().toString();
 		myCache.set(`url_${resortName}`, url);
 	}
-	console.log(url);
+	cacheKey = resortName + Object.values(req.query).sort().toString();
 
 	next();
 });
@@ -62,23 +61,23 @@ app.get('/', (req, res) => {
 });
 
 app.get('/resorts', async (req, res) => {
-	const country = req?.query?.country;
-	if (myCache.has(`resorts_${country}`)) res.json(myCache.get(`resorts_${country}`));
+	const region = req?.query?.region;
+	if (myCache.has(`resorts_${region}`)) res.json(myCache.get(`resorts_${region}`));
 	else {
 		let flag = 'all';
-		if (country) flag = 'resortsInCountry';
-		const result = await allResorts.allResorts(req, res, p, flag);
-		myCache.set(`resorts_${country}`, result, 604800); // Lasts a week
+		if (region) flag = 'resortsInRegion';
+		const result = await resorts.resorts(req, res, p, flag);
+		myCache.set(`resorts_${region}`, result, 604800); // Lasts a week
 
 		res.json(result);
 	}
 });
 
-app.get('/resorts/countries', async (req, res) => {
-	if (myCache.has('resorts/countries')) res.json(myCache.get('resorts/countries'));
+app.get('/regions', async (req, res) => {
+	if (myCache.has('regions')) res.json(myCache.get('regions'));
 	else {
-		const result = await allResorts.allResorts(req, res, p, 'countries');
-		myCache.set(`resorts/countries`, result, 604800); // Lasts a week
+		const result = await resorts.resorts(req, res, p, 'regions');
+		myCache.set(`regions`, result, 604800); // Lasts a week
 
 		res.json(result);
 	}
