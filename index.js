@@ -47,7 +47,7 @@ app.use('/:resort', async (req, res, next) => {
 		url = myCache.get(`url_${resortName}`);
 	} else {
 		url = await getUrl.getUrl(req, res, p, resortName);
-		myCache.set(`url_${resortName}`, url);
+		if (url) myCache.set(`url_${resortName}`, url);
 	}
 	cacheKey = resortName + Object.values(req.query).sort().toString();
 
@@ -67,7 +67,7 @@ app.get('/resorts', async (req, res) => {
 		let flag = 'all';
 		if (region) flag = 'resortsInRegion';
 		const result = await resorts.resorts(req, res, p, flag);
-		myCache.set(`resorts_${region}`, result, 604800); // Lasts a week
+		if (result) myCache.set(`resorts_${region}`, result, 604800); // Lasts a week
 
 		res.json(result);
 	}
@@ -77,7 +77,7 @@ app.get('/regions', async (req, res) => {
 	if (myCache.has('regions')) res.json(myCache.get('regions'));
 	else {
 		const result = await resorts.resorts(req, res, p, 'regions');
-		myCache.set(`regions`, result, 604800); // Lasts a week
+		if (result) myCache.set(`regions`, result, 604800); // Lasts a week
 
 		res.json(result);
 	}
@@ -88,7 +88,7 @@ app.get('/:resort/hourly', async (req, res) => {
 	if (myCache.has(cacheKey)) res.json(myCache.get(cacheKey));
 	else {
 		const result = await hourly.hourly(req, res, p, url);
-		myCache.set(`${cacheKey}`, result, 1200);
+		if (result) myCache.set(`${cacheKey}`, result, 1200);
 
 		res.json(result);
 		// clearInterval(myTimer);
@@ -101,7 +101,7 @@ app.get('/:resort/forecast', async (req, res) => {
 	if (myCache.has(cacheKey)) res.json(myCache.get(cacheKey));
 	else {
 		const result = await forecast.forecast(req, res, p, url);
-		myCache.set(`${cacheKey}`, result, 1800);
+		if (result) myCache.set(`${cacheKey}`, result, 1800);
 
 		res.json(result);
 		// clearInterval(myTimer);
@@ -114,7 +114,7 @@ app.get('/:resort/snowConditions', async (req, res) => {
 	if (myCache.has(cacheKey)) res.json(myCache.get(cacheKey));
 	else {
 		const result = await snowConditions.snowConditions(req, res, cheerio, request, url);
-		myCache.set(`${cacheKey}`, result, 1200);
+		if (result) myCache.set(`${cacheKey}`, result, 1200);
 
 		res.json(result);
 		// clearInterval(myTimer);
