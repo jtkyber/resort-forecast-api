@@ -79,6 +79,13 @@ const getUrl = async (req, res, p, resortName) => {
 		await page.waitForNavigation({ waitUntil: 'domcontentloaded' });
 		const newUrl = await page.url();
 
+		let lastIndex = newUrl.lastIndexOf('/');
+		const lastSection = newUrl.substring(lastIndex + 1);
+
+		if (lastSection === 'bot' || lastSection === 'mid' || lastSection === 'top') {
+			return newUrl.substring(0, lastIndex);
+		}
+
 		return newUrl;
 	} catch (err) {
 		console.log(err, 'getUrl');
