@@ -19,7 +19,7 @@ const snowConditions = require('./controllers/snowConditions');
 
 let url = null;
 let cacheKey;
-// let resortName;
+let resortName;
 // let result = null;
 // let myTimer = null;
 // let bypassTimeoutCount = 0;
@@ -41,13 +41,13 @@ app.use('/:resort', async (req, res, next) => {
 		return;
 	}
 
-	const resortName = req.params.resort.toLowerCase().replace(/\s+/g, ' ').replace(' ', '-').trim();
+	resortName = req.params.resort.toLowerCase().replace(/\s+/g, ' ').replace(' ', '-').trim();
 
 	if (myCache.has(`url_${resortName}`)) {
 		url = myCache.get(`url_${resortName}`);
 	} else {
 		url = await getUrl.getUrl(req, res, p, resortName);
-		if (url) myCache.set(`url_${resortName}`, url);
+		// if (url) myCache.set(`url_${resortName}`, url, 604800);
 	}
 	cacheKey = resortName + Object.values(req.query).sort().toString();
 
@@ -88,7 +88,10 @@ app.get('/:resort/hourly', async (req, res) => {
 	if (myCache.has(cacheKey)) res.json(myCache.get(cacheKey));
 	else {
 		const result = await hourly.hourly(req, res, p, url);
-		if (result) myCache.set(`${cacheKey}`, result, 1200);
+		if (result) {
+			myCache.set(`${cacheKey}`, result, 1200);
+			if (!myCache.has(`url_${resortName}`)) myCache.set(`url_${resortName}`, url, 604800);
+		}
 
 		res.json(result);
 		// clearInterval(myTimer);
@@ -101,7 +104,10 @@ app.get('/:resort/forecast', async (req, res) => {
 	if (myCache.has(cacheKey)) res.json(myCache.get(cacheKey));
 	else {
 		const result = await forecast.forecast(req, res, p, url);
-		if (result) myCache.set(`${cacheKey}`, result, 1800);
+		if (result) {
+			myCache.set(`${cacheKey}`, result, 1800);
+			if (!myCache.has(`url_${resortName}`)) myCache.set(`url_${resortName}`, url, 604800);
+		}
 
 		res.json(result);
 		// clearInterval(myTimer);
@@ -114,7 +120,10 @@ app.get('/:resort/snowConditions', async (req, res) => {
 	if (myCache.has(cacheKey)) res.json(myCache.get(cacheKey));
 	else {
 		const result = await snowConditions.snowConditions(req, res, cheerio, request, url);
-		if (result) myCache.set(`${cacheKey}`, result, 1200);
+		if (result) {
+			myCache.set(`${cacheKey}`, result, 1200);
+			if (!myCache.has(`url_${resortName}`)) myCache.set(`url_${resortName}`, url, 604800);
+		}
 
 		res.json(result);
 		// clearInterval(myTimer);
