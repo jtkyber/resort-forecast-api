@@ -92,6 +92,8 @@ const resorts = async (req, res, p, flag) => {
 				break;
 			case 'resortsInRegion':
 				result = await getResorts(page, req.query.region);
+				const firstKey = Object.keys(result)[0];
+				result = result[firstKey];
 				break;
 			default:
 				result = await getResorts(page);
