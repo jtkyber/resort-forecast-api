@@ -83,7 +83,7 @@ const resorts = async (req, res, p, flag) => {
 		const url = 'https://www.snow-forecast.com/countries';
 		var browser = await p.launch({
 			headless: 'new',
-			executablePath: 'google-chrome',
+			executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
 			// executablePath: '/usr/bin/google-chrome',
 			args: ['--no-sandbox', '--disable-setuid-sandbox'],
 		});

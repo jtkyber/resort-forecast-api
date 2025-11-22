@@ -1,6 +1,6 @@
 const request = require('request');
 const cheerio = require('cheerio');
-const p = require('puppeteer');
+const p = require('puppeteer-core');
 const express = require('express');
 const NodeCache = require('node-cache');
 const myCache = new NodeCache();
