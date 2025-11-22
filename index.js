@@ -26,7 +26,7 @@ let resortName;
 // let params;
 // let query;
 
-//Middleware
+//Middleware--
 
 app.use('/', async (req, res, next) => {
 	url = null;
