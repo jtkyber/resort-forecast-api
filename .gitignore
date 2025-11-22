@@ -1,7 +1,5 @@
 node_modules/
-snowConditionsPup.js
 .cache
 chrome-win
 weatherScraper.js
-.env
-.puppeteerrc.cjs
+.env.development
