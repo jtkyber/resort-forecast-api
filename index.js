@@ -54,7 +54,7 @@ app.use('/:resort', async (req, res, next) => {
 	next();
 });
 
-//Endpoints
+//Endpoints -------
 
 app.get('/', (req, res) => {
 	res.json('Working');
