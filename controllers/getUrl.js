@@ -51,7 +51,7 @@ const getUrl = async (req, res, p, resortName) => {
 		var browser = await p.launch({
 			headless: 'new',
 			executablePath: 'google-chrome',
-			// executablePath: './chrome-win/chrome.exe',
+			// executablePath: '/usr/bin/google-chrome',
 			args: ['--no-sandbox', '--disable-setuid-sandbox'],
 		});
 
@@ -73,8 +73,8 @@ const getUrl = async (req, res, p, resortName) => {
 
 		await page.goto(url, { waitUntil: 'domcontentloaded' });
 
-		await page.type('.location-navigation__search', resortName);
-		await page.waitForSelector('.location-search-results-section--primary .result-entry');
+		await page.type('.page-header__search-input', resortName);
+		await page.waitForSelector('.location-search-results-section-rows .result-entry');
 		await page.keyboard.press('Enter');
 		await page.waitForNavigation({ waitUntil: 'domcontentloaded' });
 		const newUrl = await page.url();

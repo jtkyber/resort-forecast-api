@@ -1,38 +1,75 @@
+const getRegions = async page => {
+	const regions = await page.$$eval('#content-container #content .countries-list a', options => {
+		let regionsTemp = [];
+
+		for (let option of options) {
+			const href = option.href;
+			if (!href) continue;
+
+			const startString = 'countries/';
+			const endString = '/resorts';
+
+			const startIndex = href.indexOf(startString);
+			if (startIndex === -1) return null;
+
+			const actualStartIndex = startIndex + startString.length;
+			const endIndex = href.indexOf(endString, actualStartIndex);
+			if (endIndex === -1) return null;
+
+			const regionName = href.substring(actualStartIndex, endIndex);
+
+			if (regionName) regionsTemp.push(regionName);
+		}
+		return regionsTemp;
+	});
+	return regions;
+};
+
 const getResorts = async (page, region = false) => {
 	try {
 		const resortObject = {};
 		// Get all region values
 		const regions = await getRegions(page);
 
-		for (let i = 0; i < regions.values.length; i++) {
-			const regionValue = regions.values[i];
-			const regionName = regions.names[i];
+		for (let i = 0; i < regions.length; i++) {
+			const regionName = regions[i];
 
 			if (region && region !== regionName) continue;
 
-			page.select('.location-navigation #feature', regionValue);
-
-			await page.waitForFunction(
-				() => {
-					const select = document.querySelector('.location-navigation #resort');
-					return select && select.disabled;
-				},
-				{ timeout: 5000 }
-			);
-			await page.waitForFunction(
-				() => {
-					const select = document.querySelector('.location-navigation #resort');
-					return select && !select.disabled;
-				},
-				{ timeout: 5000 }
-			);
-
-			const resortNames = await page.$$eval('.location-navigation #resort option', options => {
-				return options.map(option => option.value);
+			await page.goto(`https://www.snow-forecast.com/countries/${regionName}/resorts`, {
+				waitUntil: 'domcontentloaded',
 			});
-			resortNames.shift();
+
+			const resortNames = await page.$$eval('.digest-cont .my-digest .digest-row .name > a', options => {
+				return options.map(option => option.innerText);
+			});
 
 			resortObject[regionName] = resortNames;
+
+			const urls = await page.$$eval('#ctry_tabs_cont a', tabs => {
+				return tabs.map(a => {
+					const href = a.href;
+					const lastIndex = href.lastIndexOf('/');
+					const tabValue = href.substring(lastIndex + 1);
+
+					if (tabValue === 'powder') return null;
+					return href;
+				});
+			});
+
+			for (const url of urls) {
+				if (!url) continue;
+
+				await page.goto(url, {
+					waitUntil: 'domcontentloaded',
+				});
+
+				const resortNames = await page.$$eval('.digest-cont .my-digest .digest-row .name > a', options => {
+					return options.map(option => option.innerText);
+				});
+
+				resortObject[regionName].push(...resortNames);
+			}
 		}
 
 		return resortObject;
@@ -41,33 +78,27 @@ const getResorts = async (page, region = false) => {
 	}
 };
 
-const getRegions = async page => {
-	const regions = await page.$$eval('.location-navigation #feature option', options => {
-		let regionsTemp = { values: [], names: [] };
-		for (let option of options) {
-			if (!isNaN(option.value)) {
-				regionsTemp.names.push(option.innerText);
-				regionsTemp.values.push(option.value);
-			}
-		}
-		return regionsTemp;
-	});
-	return regions;
-};
-
 const resorts = async (req, res, p, flag) => {
 	try {
 		const url = 'https://www.snow-forecast.com/countries';
 		var browser = await p.launch({
 			headless: 'new',
 			executablePath: 'google-chrome',
-			// executablePath: './chrome-win/chrome.exe',
+			// executablePath: '/usr/bin/google-chrome',
 			args: ['--no-sandbox', '--disable-setuid-sandbox'],
 		});
 
 		const page = await browser.newPage();
 		await page.setDefaultTimeout(60000);
 		await page.setRequestInterception(true);
+
+		// page.on('console', async msg => {
+		// 	const msgArgs = msg.args();
+		// 	const logValues = await Promise.all(msgArgs.map(async arg => await arg.jsonValue()));
+		// 	if (logValues.length) {
+		// 		console.log(...logValues);
+		// 	}
+		// });
 
 		//Skip loading of imgs/stylesheets/media
 		page.on('request', request => {
@@ -89,7 +120,7 @@ const resorts = async (req, res, p, flag) => {
 				result = await getResorts(page);
 				break;
 			case 'regions':
-				result = (await getRegions(page)).names;
+				result = await getRegions(page);
 				break;
 			case 'resortsInRegion':
 				result = await getResorts(page, req.query.region);

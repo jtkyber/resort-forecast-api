@@ -539,7 +539,7 @@ const forecast = async (req, res, p, scrapedUrl) => {
 		var browser = await p.launch({
 			headless: 'new',
 			executablePath: 'google-chrome',
-			// executablePath: './chrome-win/chrome.exe',
+			// executablePath: '/usr/bin/google-chrome',
 			args: ['--no-sandbox', '--disable-setuid-sandbox'],
 		});
 
