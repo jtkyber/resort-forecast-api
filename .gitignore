@@ -3,3 +3,5 @@ snowConditionsPup.js
 .cache
 chrome-win
 weatherScraper.js
+.env
+.puppeteerrc.cjs

@@ -84,7 +84,6 @@ const resorts = async (req, res, p, flag) => {
 		var browser = await p.launch({
 			headless: 'new',
 			executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
-			// executablePath: '/usr/bin/google-chrome',
 			args: ['--no-sandbox', '--disable-setuid-sandbox'],
 		});
 
