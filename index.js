@@ -1,3 +1,4 @@
+require('dotenv').config({ path: '.env.local' });
 const request = require('request');
 const cheerio = require('cheerio');
 const p = require('puppeteer-core');
