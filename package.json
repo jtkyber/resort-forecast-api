@@ -1,5 +1,5 @@
 {
-	"name": "resort-weather-api",
+	"name": "resort-forecast-api",
 	"version": "1.0.0",
 	"description": "",
 	"main": "index.js",
@@ -11,14 +11,14 @@
 	"author": "",
 	"license": "ISC",
 	"dependencies": {
-		"cheerio": "*",
-		"cors": "*",
-		"express": "*",
-		"node-cache": "*",
+		"cheerio": "^1.1.2",
+		"cors": "^2.8.5",
+		"express": "^5.1.0",
+		"node-cache": "^5.1.2",
 		"puppeteer-core": "^24.31.0",
-		"request": "*"
+		"request": "^2.88.2"
 	},
 	"devDependencies": {
-		"nodemon": "*"
+		"nodemon": "^3.1.11"
 	}
 }
