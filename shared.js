@@ -1,37 +1,30 @@
 export const clickUnitButton = async (page, units) => {
 	try {
-		const radioSelector = `.switch-units-selector__control .radio-button__input[value="${
+		const radioSelectorTarget = `.switch-units-selector__control .radio-button__input[value="${
 			units === 'Metric' ? 'Metric' : 'Imperial'
 		}"]`;
+		const radioSelectorOther = `.switch-units-selector__control .radio-button__input[value="${
+			units === 'Metric' ? 'Imperial' : 'Metric'
+		}"]`;
+
+		const unitSelector = '.live-snow__table .windu';
+		const expectedUnitText = units === 'Metric' ? 'km/h' : 'mph';
 
 		// Open unit btns
 		await page.click('.forecast-table__header-container--units .switch-units');
 
 		// Wait for unit selector
-		await page.waitForSelector(radioSelector);
+		await page.waitForSelector(radioSelectorTarget);
 
-		// Click respective units button
-		await page.click(radioSelector);
-
-		// Wait for radio to be checked
-		await page.waitForFunction(
-			sel => {
-				const el = document.querySelector(sel);
-				return !!el && el?.checked === true;
-			},
-			{ polling: 'mutation' },
-			radioSelector
-		);
-
-		await page.evaluate(() => new Promise(r => requestAnimationFrame(r)));
+		// Click respective units button (click other one first because of website bug)
+		await page.click(radioSelectorOther);
+		await page.click(radioSelectorTarget);
 
 		// Wait for units on page to change after clicking btn
-		const unitSelector = '.live-snow__table .windu';
-		const expectedUnitText = units === 'Metric' ? 'km/h' : 'mph';
 		await page.waitForFunction(
 			(unitSelector, expectedUnitText) => {
 				const unitTestEl = document.querySelector(unitSelector);
-				return unitTestEl.innerText === expectedUnitText;
+				return unitTestEl.innerText.trim() === expectedUnitText;
 			},
 			{ polling: 'mutation' },
 			unitSelector,
