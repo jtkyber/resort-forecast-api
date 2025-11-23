@@ -1,28 +1,10 @@
+import { setupBrowser } from '../shared.js';
+
 export const getUrl = async (req, res, p, resortName) => {
 	try {
 		const url = 'https://www.snow-forecast.com/countries';
 
-		var browser = await p.launch({
-			headless: 'new',
-			executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
-			args: ['--no-sandbox', '--disable-setuid-sandbox'],
-		});
-
-		const page = await browser.newPage();
-		await page.setDefaultTimeout(60000);
-		await page.setRequestInterception(true);
-
-		//Skip loading of imgs/stylesheets/media
-		page.on('request', request => {
-			if (
-				request.resourceType() === 'image' ||
-				request.resourceType() === 'stylesheet' ||
-				request.resourceType() === 'media' ||
-				request.resourceType() === 'font'
-			)
-				request.abort();
-			else request.continue();
-		});
+		var { browser, page } = await setupBrowser(p);
 
 		await page.goto(url, { waitUntil: 'domcontentloaded' });
 

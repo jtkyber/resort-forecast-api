@@ -1,3 +1,5 @@
+import { setupBrowser } from '../shared.js';
+
 const getRegions = async page => {
 	const regions = await page.$$eval('#content-container #content .countries-list a', options => {
 		let regionsTemp = [];
@@ -81,36 +83,8 @@ const getResorts = async (page, region = false) => {
 export const resorts = async (req, res, p, flag) => {
 	try {
 		const url = 'https://www.snow-forecast.com/countries';
-		var browser = await p.launch({
-			headless: 'new',
-			executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
-			args: ['--no-sandbox', '--disable-setuid-sandbox'],
-		});
 
-		const page = await browser.newPage();
-		await page.setDefaultTimeout(60000);
-		await page.setRequestInterception(true);
-
-		// page.on('console', async msg => {
-		// 	const msgArgs = msg.args();
-		// 	const logValues = await Promise.all(msgArgs.map(async arg => await arg.jsonValue()));
-		// 	if (logValues.length) {
-		// 		console.log(...logValues);
-		// 	}
-		// });
-
-		//Skip loading of imgs/stylesheets/media
-		page.on('request', request => {
-			if (
-				request.resourceType() === 'image' ||
-				request.resourceType() === 'stylesheet' ||
-				request.resourceType() === 'media' ||
-				request.resourceType() === 'font'
-			)
-				request.abort();
-			else request.continue();
-		});
-
+		var { browser, page } = await setupBrowser(p);
 		await page.goto(url, { waitUntil: 'domcontentloaded' });
 
 		let result;

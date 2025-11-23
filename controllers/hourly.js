@@ -1,4 +1,4 @@
-import { clickUnitButton, getBasicInfo } from '../shared.js';
+import { clickUnitButton, getBasicInfo, setupBrowser } from '../shared.js';
 
 //Click buttons to expand hourly
 const expandHourly = async (page, c) => {
@@ -382,34 +382,8 @@ export const hourly = async (req, res, p, scrapedUrl) => {
 			req?.query?.el === 'top' || req?.query?.el === 'mid' || req?.query?.el === 'bot'
 				? req?.query?.el
 				: null;
-		var browser = await p.launch({
-			headless: 'new',
-			executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
-			args: ['--no-sandbox', '--disable-setuid-sandbox'],
-		});
-		const page = await browser.newPage();
-		await page.setDefaultTimeout(90000);
-		await page.setRequestInterception(true);
 
-		//Skip loading of imgs/stylesheets/media
-		page.on('request', request => {
-			if (
-				request.resourceType() === 'image' ||
-				request.resourceType() === 'stylesheet' ||
-				request.resourceType() === 'media' ||
-				request.resourceType() === 'font'
-			)
-				request.abort();
-			else request.continue();
-		});
-
-		// page.on('console', async msg => {
-		// 	const msgArgs = msg.args();
-		// 	const logValues = await Promise.all(msgArgs.map(async arg => await arg.jsonValue()));
-		// 	if (logValues.length) {
-		// 		console.log(...logValues);
-		// 	}
-		// });
+		var { browser, page } = await setupBrowser(p);
 
 		let resultMetric;
 		let resultImperial;

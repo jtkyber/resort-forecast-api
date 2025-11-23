@@ -64,3 +64,40 @@ export const getBasicInfo = async (page, url, units) => {
 		console.log(err, 'getBasicInfo');
 	}
 };
+
+export const setupBrowser = async p => {
+	var browser = await p.launch({
+		headless: 'new',
+		executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
+		args: ['--no-sandbox', '--disable-setuid-sandbox'],
+	});
+
+	const page = await browser.newPage();
+	await page.setDefaultTimeout(60000);
+	await page.setRequestInterception(true);
+
+	// page.on('console', async msg => {
+	// 	const msgArgs = msg.args();
+	// 	const logValues = await Promise.all(msgArgs.map(async arg => await arg.jsonValue()));
+	// 	if (logValues.length) {
+	// 		console.log(...logValues);
+	// 	}
+	// });
+
+	//Skip loading of imgs/stylesheets/media
+	page.on('request', request => {
+		if (
+			request.resourceType() === 'image' ||
+			request.resourceType() === 'stylesheet' ||
+			request.resourceType() === 'media' ||
+			request.resourceType() === 'font'
+		)
+			request.abort();
+		else request.continue();
+	});
+
+	return {
+		browser,
+		page,
+	};
+};
