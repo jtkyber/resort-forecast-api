@@ -78,7 +78,7 @@ const getResorts = async (page, region = false) => {
 	}
 };
 
-const resorts = async (req, res, p, flag) => {
+export const resorts = async (req, res, p, flag) => {
 	try {
 		const url = 'https://www.snow-forecast.com/countries';
 		var browser = await p.launch({
@@ -137,8 +137,4 @@ const resorts = async (req, res, p, flag) => {
 	} finally {
 		await browser?.close();
 	}
-};
-
-module.exports = {
-	resorts,
 };

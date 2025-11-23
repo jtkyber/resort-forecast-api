@@ -1,4 +1,4 @@
-const { clickUnitButton, getBasicInfo } = require('../shared');
+import { clickUnitButton, getBasicInfo } from '../shared.js';
 
 //Click buttons to expand hourly
 const expandHourly = async (page, c) => {
@@ -343,26 +343,6 @@ const handleUnitChange = async (page, url, elevation, units, c) => {
 		};
 
 		if (!elevation && Object.keys(url).length === 3) {
-			// for (let i = 0; i <= 2; i++) {
-			//     //Go to new elevation
-			//     await page.evaluate((i) => {
-			//         const elevationBtn = document.querySelectorAll('#leftNav .elevation-control__link');
-			//         elevationBtn[i].click();
-			//     }, i)
-
-			//     await page.waitForNavigation();
-
-			//     if (i == 0) {
-			//         await clickUnitButton(page, units);
-			//         hourlyForecast.topLift = await getHourly(page, units);
-			//     } else if (i == 1) {
-			//         await clickUnitButton(page, units);
-			//         hourlyForecast.midLift = await getHourly(page, units);
-			//     } else if (i == 2) {
-			//         await clickUnitButton(page, units);
-			//         hourlyForecast.botLift = await getHourly(page, units);
-			//     }
-
 			hourlyForecast.topLift = await handleElevationChange(url.top);
 			hourlyForecast.midLift = await handleElevationChange(url.mid);
 			hourlyForecast.botLift = await handleElevationChange(url.bot);
@@ -381,7 +361,7 @@ const handleUnitChange = async (page, url, elevation, units, c) => {
 	}
 };
 
-const hourly = async (req, res, p, scrapedUrl) => {
+export const hourly = async (req, res, p, scrapedUrl) => {
 	try {
 		console.log('hourly');
 		let url;
@@ -433,10 +413,10 @@ const hourly = async (req, res, p, scrapedUrl) => {
 
 		let resultMetric;
 		let resultImperial;
-		if (units === 'm' || units === undefined) {
+		if (units === 'm' || !units) {
 			resultMetric = await handleUnitChange(page, url, elevation, 'Metric', c);
 		}
-		if (units === 'i' || units === undefined) {
+		if (units === 'i' || !units) {
 			resultImperial = await handleUnitChange(page, url, elevation, 'Imperial', c);
 		}
 
@@ -452,8 +432,4 @@ const hourly = async (req, res, p, scrapedUrl) => {
 	} finally {
 		await browser?.close();
 	}
-};
-
-module.exports = {
-	hourly,
 };

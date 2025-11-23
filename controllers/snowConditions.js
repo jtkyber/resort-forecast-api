@@ -117,7 +117,7 @@ const getSnowConditions = ($, pageUnits, units) => {
 	}
 };
 
-const snowConditions = (req, res, cheerio, request, url) => {
+export const snowConditions = (req, res, cheerio, request, url) => {
 	try {
 		url += '/top';
 		const units = req?.query?.units;
@@ -167,8 +167,4 @@ const snowConditions = (req, res, cheerio, request, url) => {
 	} catch (err) {
 		console.log(err, 'getUrl');
 	}
-};
-
-module.exports = {
-	snowConditions,
 };

@@ -1,30 +1,37 @@
-const clickUnitButton = async (page, units) => {
+export const clickUnitButton = async (page, units) => {
 	try {
 		// Open unit btns
 		await page.click('.forecast-table__header-container--units .switch-units');
 
+		// Wait for unit selector
 		await page.waitForSelector('.switch-units-selector');
 
-		//Click corresponding units button
-		await page.$$eval(
-			'.switch-units-selector .radio-button__input',
-			(btns, units) => {
-				let selectedBtn;
-				btns.forEach(btn => {
-					if (btn.value === units) {
-						selectedBtn = btn;
-					}
-				});
-				selectedBtn.click();
-				return;
-			},
-			units
-		);
+		switch (units) {
+			case 'Metric':
+				await page.click('.switch-units-selector__control .radio-button__input[value="Metric"]');
+				break;
+			case 'Imperial':
+				await page.click('.switch-units-selector__control .radio-button__input[value="Imperial"]');
+				break;
+		}
 
-		// Wait for units on page to change after clicking btn
+		// const test1 = await page.$eval(
+		// 	'.switch-units-selector__control .radio-button__input[value="Metric"]',
+		// 	el => el.checked
+		// );
+		// const test2 = await page.$eval(
+		// 	'.switch-units-selector__control .radio-button__input[value="Imperial"]',
+		// 	el => el.checked
+		// );
+
+		// console.log(test1, test2);
+
+		// // Wait for units on page to change after clicking btn
 		await page.waitForFunction(
-			units =>
-				document.querySelector('.live-snow__table .windu').innerText == (units == 'Metric' ? 'km/h' : 'mph'),
+			units => {
+				const unitTestEl = document.querySelector('.forecast-table__row[data-row="snow"] .snowu');
+				return unitTestEl.innerText === (units === 'Metric' ? 'cm' : 'in');
+			},
 			{},
 			units
 		);
@@ -33,7 +40,7 @@ const clickUnitButton = async (page, units) => {
 	}
 };
 
-const getBasicInfo = async (page, url, units) => {
+export const getBasicInfo = async (page, url, units) => {
 	try {
 		const unit = units === 'Metric' ? 'm' : 'ft';
 		const basicInfo = await page.evaluate(
@@ -61,9 +68,4 @@ const getBasicInfo = async (page, url, units) => {
 	} catch (err) {
 		console.log(err, 'getBasicInfo');
 	}
-};
-
-module.exports = {
-	clickUnitButton,
-	getBasicInfo,
 };

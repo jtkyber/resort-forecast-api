@@ -1,4 +1,4 @@
-const { clickUnitButton, getBasicInfo } = require('../shared');
+import { clickUnitButton, getBasicInfo } from '../shared.js';
 
 const getForecast = async (page, units) => {
 	try {
@@ -472,51 +472,25 @@ const handleUnitChange = async (page, url, elevation, units) => {
 		};
 
 		if (!elevation && Object.keys(url).length === 3) {
-			// for (let i = 0; i <= 2; i++) {
-			//     await page.evaluate((i) => {
-			//         const elevationBtnTop = document.querySelectorAll('#leftNav .elevation-control__link');
-			//         elevationBtnTop[i].click();
-			//     }, i)
-
-			//     await page.waitForNavigation();
-
-			//     if (i == 0) {
-			//         await clickUnitButton(page, units);
-			//         weeklyForecast.topLift = await getForecast(page, units);
-			//     } else if (i == 1) {
-			//         await clickUnitButton(page, units);
-			//         weeklyForecast.midLift = await getForecast(page, units);
-			//     } else if (i == 2) {
-			//         await clickUnitButton(page, units);
-			//         weeklyForecast.botLift = await getForecast(page, units);
-			//     }
-			// }
-
 			weeklyForecast.topLift = await handleElevationChange(url.top);
 			weeklyForecast.midLift = await handleElevationChange(url.mid);
 			weeklyForecast.botLift = await handleElevationChange(url.bot);
 			basicInfo = await getBasicInfo(page, url.top, units);
-			// console.log(basicInfo);
-
-			return {
-				...weeklyForecast,
-				basicInfo,
-			};
 		} else {
-			const forecast = await handleElevationChange(url);
+			weeklyForecast = await handleElevationChange(url);
 			basicInfo = await getBasicInfo(page, url, units);
-
-			return {
-				...forecast,
-				basicInfo,
-			};
 		}
+
+		return {
+			...weeklyForecast,
+			basicInfo,
+		};
 	} catch (err) {
 		console.log(err, 'handleUnitChange');
 	}
 };
 
-const forecast = async (req, res, p, scrapedUrl) => {
+export const forecast = async (req, res, p, scrapedUrl) => {
 	try {
 		let url;
 		if (req?.query?.el === 'top' || req?.query?.el === 'mid' || req?.query?.el === 'bot') {
@@ -570,11 +544,10 @@ const forecast = async (req, res, p, scrapedUrl) => {
 
 		let resultMetric;
 		let resultImperial;
-
-		if (units === 'm' || units === undefined) {
+		if (units === 'm' || !units) {
 			resultMetric = await handleUnitChange(page, url, elevation, 'Metric');
 		}
-		if (units === 'i' || units === undefined) {
+		if (units === 'i' || !units) {
 			resultImperial = await handleUnitChange(page, url, elevation, 'Imperial');
 		}
 
@@ -590,8 +563,4 @@ const forecast = async (req, res, p, scrapedUrl) => {
 	} finally {
 		await browser?.close();
 	}
-};
-
-module.exports = {
-	forecast,
 };

@@ -1,4 +1,4 @@
-const getUrl = async (req, res, p, resortName) => {
+export const getUrl = async (req, res, p, resortName) => {
 	try {
 		const url = 'https://www.snow-forecast.com/countries';
 
@@ -45,8 +45,4 @@ const getUrl = async (req, res, p, resortName) => {
 	} finally {
 		await browser?.close();
 	}
-};
-
-module.exports = {
-	getUrl,
 };
