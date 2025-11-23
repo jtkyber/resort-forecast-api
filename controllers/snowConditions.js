@@ -134,11 +134,11 @@ export const snowConditions = (req, res, cheerio, request, url) => {
 					let snowConditionsImperial = {};
 					let basicInfoImperial = {};
 
-					if (units === 'm' || units === undefined) {
+					if (units === 'm' || !units) {
 						snowConditionsMetric = getSnowConditions($, pageUnits, 'Metric');
 						basicInfoMetric = getBasicInfo($, url, pageUnits, 'Metric');
 					}
-					if (units === 'i' || units === undefined) {
+					if (units === 'i' || !units) {
 						snowConditionsImperial = getSnowConditions($, pageUnits, 'Imperial');
 						basicInfoImperial = getBasicInfo($, url, pageUnits, 'Imperial');
 					}

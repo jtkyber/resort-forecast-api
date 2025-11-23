@@ -1,39 +1,41 @@
 export const clickUnitButton = async (page, units) => {
 	try {
+		const radioSelector = `.switch-units-selector__control .radio-button__input[value="${
+			units === 'Metric' ? 'Metric' : 'Imperial'
+		}"]`;
+
 		// Open unit btns
 		await page.click('.forecast-table__header-container--units .switch-units');
 
 		// Wait for unit selector
-		await page.waitForSelector('.switch-units-selector');
+		await page.waitForSelector(radioSelector);
 
-		switch (units) {
-			case 'Metric':
-				await page.click('.switch-units-selector__control .radio-button__input[value="Metric"]');
-				break;
-			case 'Imperial':
-				await page.click('.switch-units-selector__control .radio-button__input[value="Imperial"]');
-				break;
-		}
+		// Click respective units button
+		await page.click(radioSelector);
 
-		// const test1 = await page.$eval(
-		// 	'.switch-units-selector__control .radio-button__input[value="Metric"]',
-		// 	el => el.checked
-		// );
-		// const test2 = await page.$eval(
-		// 	'.switch-units-selector__control .radio-button__input[value="Imperial"]',
-		// 	el => el.checked
-		// );
-
-		// console.log(test1, test2);
-
-		// // Wait for units on page to change after clicking btn
+		// Wait for radio to be checked
 		await page.waitForFunction(
-			units => {
-				const unitTestEl = document.querySelector('.forecast-table__row[data-row="snow"] .snowu');
-				return unitTestEl.innerText === (units === 'Metric' ? 'cm' : 'in');
+			sel => {
+				const el = document.querySelector(sel);
+				return !!el && el?.checked === true;
 			},
-			{},
-			units
+			{ polling: 'mutation' },
+			radioSelector
+		);
+
+		await page.evaluate(() => new Promise(r => requestAnimationFrame(r)));
+
+		// Wait for units on page to change after clicking btn
+		const unitSelector = '.live-snow__table .windu';
+		const expectedUnitText = units === 'Metric' ? 'km/h' : 'mph';
+		await page.waitForFunction(
+			(unitSelector, expectedUnitText) => {
+				const unitTestEl = document.querySelector(unitSelector);
+				return unitTestEl.innerText === expectedUnitText;
+			},
+			{ polling: 'mutation' },
+			unitSelector,
+			expectedUnitText
 		);
 	} catch (err) {
 		console.log(err, 'clickUnitButton');
