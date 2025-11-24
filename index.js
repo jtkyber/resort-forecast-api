@@ -53,7 +53,7 @@ app.use('/:resort', async (req, res, next) => {
 //Endpoints -------
 
 app.get('/', (req, res) => {
-	res.json('Working');
+	res.json('Testing123');
 });
 
 app.get('/resorts', async (req, res) => {
